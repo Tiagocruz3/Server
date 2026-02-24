@@ -144,58 +144,43 @@ export function renderDashboard(props: DashboardProps) {
             </article>
           </section>
 
-          <section class="card" style="margin-bottom:14px;">
+          <section class="card dashboard-ai-directory" style="margin-bottom:14px;">
             <div class="dashboard-workforce-head">
               <div>
-                <div class="card-title">My Digital Workforce</div>
-                <div class="card-sub">Manage and monitor your AI agents</div>
+                <div class="card-title">AI Agent</div>
+                <div class="card-sub">Find your AI Agent quickly and assign tasks fast.</div>
               </div>
-              <button class="btn primary" @click=${props.onAddAgent}>+ Create agent</button>
+              <button class="btn primary" @click=${props.onAddAgent}>+ Create task</button>
             </div>
 
-            <div class="dashboard-workforce-filters" style="margin-top:12px;">
-              <button class="btn" disabled>Agent Type: All</button>
-              <label class="field" style="min-width:160px;">
+            <div class="dashboard-workforce-filters dashboard-workforce-filters--directory" style="margin-top:12px;">
+              <input class="input" placeholder="Search for AI Agent..." .value=${props.agentSearch} @input=${(e: Event) => props.onAgentSearchChange((e.target as HTMLInputElement).value)} />
+              <label class="field" style="min-width:130px;">
                 <span>Sort</span>
-                <select
-                  .value=${props.agentSort}
-                  @change=${(e: Event) => props.onAgentSortChange((e.target as HTMLSelectElement).value as "name" | "id")}
-                >
+                <select .value=${props.agentSort} @change=${(e: Event) => props.onAgentSortChange((e.target as HTMLSelectElement).value as "name" | "id")}>
                   <option value="name">Name</option>
                   <option value="id">ID</option>
                 </select>
               </label>
-              <span class="muted">Active Agents ${filteredAgents.length}</span>
-              <span class="dashboard-workforce-spacer"></span>
-              <input
-                class="input"
-                placeholder="Search agents"
-                .value=${props.agentSearch}
-                @input=${(e: Event) => props.onAgentSearchChange((e.target as HTMLInputElement).value)}
-              />
+            </div>
+
+            <div class="dashboard-agent-tags" style="margin-top:10px;">
+              ${["All Agents", "Business", "Coach", "Education", "Health", "Specialist"].map((tag, idx) => html`<button class="btn ${idx === 0 ? "primary" : ""}" ?disabled=${idx !== 0}>${tag}</button>`)}
             </div>
 
             <div class="dashboard-agent-grid dashboard-agent-grid--workforce" style="margin-top:12px;">
               ${filteredAgents.map(
-                (app) => html`
-                  <article class="dashboard-agent-card dashboard-agent-card--workforce" style=${`--app-accent:${app.accent}`}>
+                (app, idx) => html`
+                  <article class="dashboard-agent-card dashboard-agent-card--workforce dashboard-agent-card--directory" style=${`--app-accent:${app.accent}`}>
                     <div class="dashboard-workforce-card-top">
-                      <span class="dashboard-workforce-status"><span class="dot"></span>Active</span>
-                      <button
-                        class="dashboard-workforce-menu"
-                        title="Agent actions"
-                        @click=${() => props.onOpenAgentModal(app.id)}
-                      >
-                        •••
-                      </button>
+                      <span class="dashboard-workforce-star">☆</span>
+                      ${idx % 3 === 0 ? html`<span class="dashboard-workforce-premium">Premium</span>` : html`<span class="dashboard-workforce-status"><span class="dot"></span>Active</span>`}
                     </div>
                     <div class="dashboard-agent-avatar dashboard-agent-avatar--workforce">${app.icon}</div>
                     <div class="dashboard-app-card__name">${app.name}</div>
                     <div class="dashboard-app-card__role">${app.role}</div>
-                    <div class="row" style="margin-top:8px; flex-wrap: wrap;">
-                      <button class="btn" @click=${() => props.onOpenAppChat(app.id)}>Open in chat</button>
-                      <button class="btn" @click=${() => props.onOpenAgentModal(app.id)}>Profile pic</button>
-                      <button class="btn" @click=${() => props.onRunTask(app.id)}>Run task</button>
+                    <div class="row" style="margin-top:8px; flex-wrap: wrap; justify-content:center;">
+                      <button class="btn" @click=${() => props.onOpenAppChat(app.id)}>Open</button>
                       <button class="btn" @click=${() => props.onScheduleTask(app.id)}>Schedule</button>
                     </div>
                   </article>

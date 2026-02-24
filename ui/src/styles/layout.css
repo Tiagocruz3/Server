@@ -1052,6 +1052,22 @@
   min-width: 180px;
 }
 
+.dashboard-workforce-filters--directory .input {
+  flex: 1;
+  min-width: 260px;
+}
+
+.dashboard-ai-directory {
+  background: linear-gradient(180deg, #121722, #0f1420);
+  border-color: #2c3854;
+}
+
+.dashboard-agent-tags {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
 .dashboard-workforce-spacer {
   flex: 1;
 }
@@ -1090,6 +1106,12 @@
   border-color: #303d59;
 }
 
+.dashboard-agent-card--directory {
+  text-align: center;
+  border-color: #3a4768;
+  box-shadow: inset 0 0 0 1px rgba(88, 109, 156, 0.15);
+}
+
 .dashboard-workforce-card-top {
   display: flex;
   justify-content: space-between;
@@ -1120,6 +1142,21 @@
   color: #9ee8c9;
   font-size: 12px;
   font-weight: 600;
+}
+
+.dashboard-workforce-star {
+  color: #f7ca62;
+  font-size: 16px;
+}
+
+.dashboard-workforce-premium {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 2px 8px;
+  font-size: 11px;
+  color: #fff;
+  background: linear-gradient(90deg, #6f53ff, #9a7bff);
 }
 
 .dashboard-workforce-status .dot {
