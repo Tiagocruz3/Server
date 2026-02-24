@@ -339,6 +339,13 @@ export function renderApp(state: AppViewState) {
                   isNew: true,
                 },
                 {
+                  icon: "🗓️",
+                  label: "Sheducler",
+                  sub: "Run now and prefill schedules into Cron",
+                  tab: "cron" as const,
+                  isNew: true,
+                },
+                {
                   icon: "🛡️",
                   label: "Autopilot + Emergency Stop",
                   sub: "Assisted/full control modes with hard stop",
@@ -352,13 +359,6 @@ export function renderApp(state: AppViewState) {
                   sub: "Backend result rows (not chat parsing dependent)",
                   tab: "dashboard" as const,
                   dashboardView: "results" as const,
-                  isNew: true,
-                },
-                {
-                  icon: "🗓️",
-                  label: "Sheducler",
-                  sub: "Run now and prefill schedules into Cron",
-                  tab: "cron" as const,
                   isNew: true,
                 },
                 {
