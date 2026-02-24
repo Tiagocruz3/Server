@@ -356,7 +356,7 @@ export function renderApp(state: AppViewState) {
                 },
                 {
                   icon: "🗓️",
-                  label: "App Run + Schedule Quick Actions",
+                  label: "Sheducler",
                   sub: "Run now and prefill schedules into Cron",
                   tab: "cron" as const,
                   isNew: true,
