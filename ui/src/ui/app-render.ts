@@ -144,6 +144,16 @@ function taskResultSchemaInstruction(appId: "realestate" | "birdx" | "emc2"): st
   ].join("\n");
 }
 
+function toSafeText(value: unknown): string {
+  if (typeof value === "string") {
+    return value;
+  }
+  if (typeof value === "number" || typeof value === "boolean") {
+    return String(value);
+  }
+  return "";
+}
+
 function extractDashboardTaskResult(content: unknown): {
   app: "Realestate" | "Bird X" | "Agent Me";
   appId: "realestate" | "birdx" | "emc2";
@@ -159,7 +169,7 @@ function extractDashboardTaskResult(content: unknown): {
       summary?: unknown;
       text?: unknown;
     };
-    const rawApp = String(obj.appId ?? obj.agentId ?? "").toLowerCase();
+    const rawApp = toSafeText(obj.appId ?? obj.agentId).toLowerCase();
     if (rawApp) {
       const appId = rawApp.includes("realestate")
         ? "realestate"
@@ -167,19 +177,22 @@ function extractDashboardTaskResult(content: unknown): {
           ? "birdx"
           : "emc2";
       const app = appId === "realestate" ? "Realestate" : appId === "birdx" ? "Bird X" : "Agent Me";
-      const statusRaw = String(obj.status ?? "").toLowerCase();
+      const statusRaw = toSafeText(obj.status).toLowerCase();
       const status =
         statusRaw.includes("error") || statusRaw.includes("fail")
           ? "error"
           : statusRaw.includes("run") || statusRaw.includes("progress")
             ? "running"
             : "success";
-      const summary = String(obj.summary ?? obj.text ?? "(no summary)").slice(0, 120);
+      const summary = (toSafeText(obj.summary) || toSafeText(obj.text) || "(no summary)").slice(
+        0,
+        120,
+      );
       return { app, appId, summary, status };
     }
   }
 
-  const text = String(content ?? "");
+  const text = toSafeText(content);
   const jsonBlock = text.match(/```json\s*([\s\S]*?)\s*```/i)?.[1] ?? null;
   if (jsonBlock) {
     try {
@@ -1358,7 +1371,9 @@ export function renderApp(state: AppViewState) {
                       @change=${async (e: Event) => {
                         const input = e.target as HTMLInputElement;
                         const file = input.files?.[0];
-                        if (!file) return;
+                        if (!file) {
+                          return;
+                        }
                         try {
                           const text = await file.text();
                           const parsed = JSON.parse(text) as {

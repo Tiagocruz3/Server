@@ -78,18 +78,13 @@ function toDisplayText(value: unknown): string {
       .map(([k, v]) => `${k}: ${toDisplayText(v)}`)
       .join(" · ");
   }
-  return String(value);
+  return JSON.stringify(value);
 }
 
 export function renderDashboard(props: DashboardProps) {
   const totalTasks = props.taskResults.length;
   const highPriority = props.taskResults.filter((item) => item.status === "error").length;
   const activeAgents = props.presenceCount;
-  const taskCompletion = totalTasks
-    ? Math.round(
-        (props.taskResults.filter((item) => item.status === "success").length / totalTasks) * 100,
-      )
-    : 0;
   const q = props.agentSearch.trim().toLowerCase();
   const filteredAgents = [...props.featuredAgents]
     .filter((a) => {
@@ -98,7 +93,7 @@ export function renderDashboard(props: DashboardProps) {
       }
       return `${a.name} ${a.role} ${a.id}`.toLowerCase().includes(q);
     })
-    .sort((a, b) =>
+    .toSorted((a, b) =>
       props.agentSort === "id" ? a.id.localeCompare(b.id) : a.name.localeCompare(b.name),
     );
   const showOverview = props.dashboardView === "overview";
@@ -111,18 +106,21 @@ export function renderDashboard(props: DashboardProps) {
         <div class="card-title">${showAutopilot ? "Autopilot Dashboard" : showResults ? "Task Results Dashboard" : "Agent Dashboard"}</div>
         <div class="card-sub">${showAutopilot ? "Autopilot and emergency controls." : showResults ? "Task results envelope store." : "Power control for your AI workforce."}</div>
       </div>
-      ${showOverview
-        ? ""
-        : html`<div class="dashboard-hero__chips">
+      ${
+        showOverview
+          ? ""
+          : html`<div class="dashboard-hero__chips">
             <span class="result-status ${props.connected ? "result-status--success" : "result-status--error"}">
               ${props.connected ? "Connected" : "Disconnected"}
             </span>
             <span class="result-status result-status--running">Autopilot ${props.autopilotMode.toUpperCase()}</span>
-          </div>`}
+          </div>`
+      }
     </section>
 
-    ${showOverview
-      ? html`
+    ${
+      showOverview
+        ? html`
           <section class="dashboard-kpis" style="margin-bottom:14px;">
             <article class="dashboard-kpi-card card">
               <div class="card-sub">Total Agents</div>
@@ -188,14 +186,22 @@ export function renderDashboard(props: DashboardProps) {
                 `,
               )}
             </div>
-            ${filteredAgents.length === 0 ? html`<div class="card-sub" style="margin-top:10px;">No agents match your search.</div>` : ""}
+            ${
+              filteredAgents.length === 0
+                ? html`
+                    <div class="card-sub" style="margin-top: 10px">No agents match your search.</div>
+                  `
+                : ""
+            }
           </section>
         `
-      : ""}
+        : ""
+    }
 
 
-    ${showAutopilot
-      ? html`<section class="card" style="margin-bottom:14px;">
+    ${
+      showAutopilot
+        ? html`<section class="card" style="margin-bottom:14px;">
           <div class="card-title">Mission Control</div>
           <div class="card-sub">Quick-access power actions</div>
           <div class="row" style="margin-top:10px; flex-wrap: wrap;">
@@ -216,7 +222,10 @@ export function renderDashboard(props: DashboardProps) {
           <div class="card">
             <div class="card-title">Live Activity Feed</div>
             <div class="list" style="margin-top:10px;">
-              ${(props.recentActivity.length ? props.recentActivity : [{ label: "No activity yet" }])
+              ${(props.recentActivity.length
+                ? props.recentActivity
+                : [{ label: "No activity yet" }]
+              )
                 .slice(0, 6)
                 .map(
                   (item) =>
@@ -234,10 +243,12 @@ export function renderDashboard(props: DashboardProps) {
             </div>
           </div>
         </section>`
-      : ""}
+        : ""
+    }
 
-    ${showResults
-      ? html`<section class="card" style="margin-bottom:14px;">
+    ${
+      showResults
+        ? html`<section class="card" style="margin-bottom:14px;">
           <div class="card-title">Task Results</div>
           <div class="list" style="margin-top:10px;">
             ${(props.taskResults.length
@@ -258,25 +269,32 @@ export function renderDashboard(props: DashboardProps) {
                     <span>
                       <strong>${item.app}</strong>
                       <span class="result-status result-status--${item.status}">${item.status}</span>
-                      ${item.schemaMismatch
-                        ? html`<span class="result-status result-status--mismatch">schema mismatch</span>`
-                        : ""}
+                      ${
+                        item.schemaMismatch
+                          ? html`
+                              <span class="result-status result-status--mismatch">schema mismatch</span>
+                            `
+                          : ""
+                      }
                       — ${toDisplayText(item.summary)}
                       <span class="muted" style="margin-left:8px;">${item.ts || ""}</span>
                     </span>
                     <span class="row" style="gap:6px;">
                       <button class="btn" @click=${() => props.onViewResult(item.appId)}>Open</button>
                       <button class="btn" @click=${() => props.onRunTask(item.appId)}>Re-run</button>
-                      ${item.schemaMismatch
-                        ? html`<button class="btn" @click=${() => props.onFixSchema(item.appId)}>Fix format</button>`
-                        : ""}
+                      ${
+                        item.schemaMismatch
+                          ? html`<button class="btn" @click=${() => props.onFixSchema(item.appId)}>Fix format</button>`
+                          : ""
+                      }
                     </span>
                   </div>
                 `,
               )}
           </div>
         </section>`
-      : ""}
+        : ""
+    }
 
     ${
       props.agentModal

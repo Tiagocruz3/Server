@@ -50,17 +50,17 @@ export function confirmInApp(message: string, title = "Confirm"): Promise<boolea
     const cancel = document.createElement("button");
     cancel.className = "agentme-dialog__btn";
     cancel.textContent = "Cancel";
-    cancel.onclick = () => {
+    cancel.addEventListener("click", () => {
       backdrop.remove();
       resolve(false);
-    };
+    });
     const ok = document.createElement("button");
     ok.className = "agentme-dialog__btn primary";
     ok.textContent = "Confirm";
-    ok.onclick = () => {
+    ok.addEventListener("click", () => {
       backdrop.remove();
       resolve(true);
-    };
+    });
     actions.append(cancel, ok);
   });
 }
@@ -76,18 +76,18 @@ export function promptInApp(options: PromptOptions): Promise<string | null> {
     const cancel = document.createElement("button");
     cancel.className = "agentme-dialog__btn";
     cancel.textContent = options.cancelText ?? "Cancel";
-    cancel.onclick = () => {
+    cancel.addEventListener("click", () => {
       backdrop.remove();
       resolve(null);
-    };
+    });
     const ok = document.createElement("button");
     ok.className = "agentme-dialog__btn primary";
     ok.textContent = options.confirmText ?? "OK";
-    ok.onclick = () => {
+    ok.addEventListener("click", () => {
       const val = input.value.trim();
       backdrop.remove();
       resolve(val.length ? val : null);
-    };
+    });
     input.addEventListener("keydown", (e) => {
       if (e.key === "Enter") {
         e.preventDefault();
