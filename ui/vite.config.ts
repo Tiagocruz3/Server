@@ -31,6 +31,34 @@ export default defineConfig(() => {
       outDir: path.resolve(here, "../dist/control-ui"),
       emptyOutDir: true,
       sourcemap: true,
+      rollupOptions: {
+        output: {
+          manualChunks(id) {
+            if (id.includes("/ui/src/ui/views/usage.ts")) {
+              return "view-usage";
+            }
+            if (id.includes("/ui/src/ui/views/agents.ts")) {
+              return "view-agents";
+            }
+            if (id.includes("/ui/src/ui/views/nodes.ts")) {
+              return "view-nodes";
+            }
+            if (id.includes("/ui/src/ui/views/debug.ts")) {
+              return "view-debug";
+            }
+            if (id.includes("/ui/src/ui/views/channels.ts")) {
+              return "view-channels";
+            }
+            if (id.includes("/ui/src/ui/views/cron.ts")) {
+              return "view-cron";
+            }
+            if (id.includes("node_modules")) {
+              return "vendor";
+            }
+            return undefined;
+          },
+        },
+      },
     },
     server: {
       host: true,
