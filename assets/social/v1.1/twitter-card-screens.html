@@ -1,0 +1,33 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <style>
+    body { margin:0; font-family: Inter, system-ui, Arial; background:#0b0f17; }
+    .wrap { width:1600px; height:900px; position:relative; color:#fff; background:linear-gradient(180deg,#101827,#0b0f17); overflow:hidden; }
+    .head { position:absolute; left:52px; top:40px; display:flex; align-items:center; gap:14px; }
+    .head img { width:56px; height:56px; border-radius:14px; }
+    .head .t1 { font-size:42px; font-weight:800; }
+    .head .t2 { font-size:24px; color:#8ecdb2; }
+    .grid { position:absolute; left:52px; right:52px; top:140px; bottom:70px; display:grid; grid-template-columns:1fr 1fr; gap:24px; }
+    .shot { border:1px solid #2f3d56; border-radius:18px; background:#0d1421; padding:14px; box-shadow:0 10px 30px rgba(0,0,0,.35); }
+    .shot .label { font-size:24px; margin-bottom:10px; color:#9fe5c9; font-weight:700; }
+    .shot img { width:100%; height:100%; object-fit:cover; border-radius:12px; border:1px solid #334763; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="head">
+      <img src="./logo.jpg" />
+      <div>
+        <div class="t1">Agent Me v1.1 Screens</div>
+        <div class="t2">Control UI + Config experience</div>
+      </div>
+    </div>
+    <div class="grid">
+      <div class="shot"><div class="label">Control UI</div><img src="./screen-chat.png" /></div>
+      <div class="shot"><div class="label">Config Form</div><img src="./screen-config.png" /></div>
+    </div>
+  </div>
+</body>
+</html>
