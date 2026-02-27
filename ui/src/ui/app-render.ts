@@ -403,6 +403,8 @@ export function renderApp(state: AppViewState) {
                     class="topbar-menu__item ${active ? "is-active" : ""}"
                     role="menuitem"
                     @click=${async (event: Event) => {
+                      event.preventDefault();
+                      event.stopPropagation();
                       const host = (event.currentTarget as HTMLElement)?.closest(".topbar-menu");
                       closeAllTopMenus(host);
 
@@ -438,7 +440,7 @@ export function renderApp(state: AppViewState) {
                           state.dashboardView = targetView;
                         } else {
                           if (item.tab === "cron") {
-                            state.cronViewMode = "week";
+                            state.cronViewMode = "month";
                           }
                           state.setTab(item.tab);
                         }
@@ -469,9 +471,12 @@ export function renderApp(state: AppViewState) {
                   ${group.tabs.map(
                     (tab) => html`
                       <button
+                        type="button"
                         class="topbar-menu__item ${state.tab === tab ? "is-active" : ""}"
                         role="menuitem"
                         @click=${(event: Event) => {
+                          event.preventDefault();
+                          event.stopPropagation();
                           const host = (event.currentTarget as HTMLElement)?.closest(
                             ".topbar-menu",
                           );

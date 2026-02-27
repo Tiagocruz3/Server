@@ -172,7 +172,7 @@ export function setTab(host: SettingsHost, next: Tab) {
     host.chatHasAutoScrolled = false;
   }
   if (next === "cron") {
-    host.cronViewMode = "week";
+    host.cronViewMode = "month";
   }
   if (next === "logs") {
     startLogsPolling(host as unknown as Parameters<typeof startLogsPolling>[0]);
