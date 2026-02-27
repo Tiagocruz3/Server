@@ -140,7 +140,7 @@ export function renderCron(props: CronProps) {
           <span class="chip chip-ok">Month</span>
         </div>
       </div>
-      <div class="card-sub">Google-calendar style planner for wakeups and recurring agent runs.</div>
+      <div class="card-sub">Planner for wakeups and recurring agent runs.</div>
       <div class="cron-google-shell ${viewMode === "month" ? "cron-google-shell--month" : ""}" style="margin-top:12px;">
         ${
           viewMode === "month"
