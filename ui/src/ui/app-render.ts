@@ -277,6 +277,41 @@ export function renderApp(state: AppViewState) {
     { label: "System", tabs: ["config", "restore", "debug", "logs"] as const },
   ];
   const showThinking = state.onboarding ? false : state.settings.chatShowThinking;
+  const launchpadItems = [
+    { icon: icons.messageSquare, label: "Chat", onClick: () => state.setTab("chat") },
+    {
+      icon: icons.zap,
+      label: "Dashboard",
+      onClick: () => {
+        state.dashboardView = "overview";
+        state.setTab("dashboard");
+      },
+    },
+    { icon: icons.fileText, label: "Scheduler", onClick: () => state.setTab("cron") },
+    {
+      icon: icons.plug,
+      label: "Autopilot",
+      onClick: () => {
+        state.dashboardView = "autopilot";
+        state.setTab("dashboard");
+      },
+    },
+    {
+      icon: icons.copy,
+      label: "Results",
+      onClick: () => {
+        state.dashboardView = "results";
+        state.setTab("dashboard");
+      },
+    },
+    { icon: icons.radio, label: "Channels", onClick: () => state.setTab("channels") },
+    { icon: icons.folder, label: "Sessions", onClick: () => state.setTab("sessions") },
+    { icon: icons.brain, label: "Memory", onClick: () => state.setTab("memory") },
+    { icon: icons.wrench, label: "Skills", onClick: () => state.setTab("skills") },
+    { icon: icons.monitor, label: "Nodes", onClick: () => state.setTab("nodes") },
+    { icon: icons.settings, label: "Config", onClick: () => state.setTab("config") },
+    { icon: icons.scrollText, label: "Logs", onClick: () => state.setTab("logs") },
+  ];
 
   if (!state.connected && !state.onboarding) {
     return html`
@@ -297,41 +332,7 @@ export function renderApp(state: AppViewState) {
             <span>Search</span>
           </div>
           <section class="launchpad-grid" style="margin-top:20px;">
-            ${[
-              { icon: "💬", label: "Chat", onClick: () => state.setTab("chat") },
-              {
-                icon: "⚡",
-                label: "Dashboard",
-                onClick: () => {
-                  state.dashboardView = "overview";
-                  state.setTab("dashboard");
-                },
-              },
-              { icon: "🗓️", label: "Scheduler", onClick: () => state.setTab("cron") },
-              {
-                icon: "🛡️",
-                label: "Autopilot",
-                onClick: () => {
-                  state.dashboardView = "autopilot";
-                  state.setTab("dashboard");
-                },
-              },
-              {
-                icon: "📦",
-                label: "Results",
-                onClick: () => {
-                  state.dashboardView = "results";
-                  state.setTab("dashboard");
-                },
-              },
-              { icon: "📡", label: "Channels", onClick: () => state.setTab("channels") },
-              { icon: "👥", label: "Sessions", onClick: () => state.setTab("sessions") },
-              { icon: "🧠", label: "Memory", onClick: () => state.setTab("memory") },
-              { icon: "🧰", label: "Skills", onClick: () => state.setTab("skills") },
-              { icon: "🤖", label: "Nodes", onClick: () => state.setTab("nodes") },
-              { icon: "⚙️", label: "Config", onClick: () => state.setTab("config") },
-              { icon: "📜", label: "Logs", onClick: () => state.setTab("logs") },
-            ].map(
+            ${launchpadItems.map(
               (item) =>
                 html`<button class="launchpad-tile" type="button" @click=${item.onClick}><span class="launchpad-tile__plate"><span class="launchpad-tile__icon">${item.icon}</span></span><span class="launchpad-tile__label">${item.label}</span></button>`,
             )}
@@ -2281,6 +2282,28 @@ export function renderApp(state: AppViewState) {
             : nothing
         }
       </main>
+      <button class="launchpad-fab" type="button" title="Open Launchpad" @click=${() => (state.launchpadOpen = true)}>
+        ${icons.menu}
+      </button>
+      ${
+        state.launchpadOpen
+          ? html`<section class="launchpad-overlay" @click=${() => (state.launchpadOpen = false)}>
+              <div class="launchpad-modal" @click=${(e: Event) => e.stopPropagation()}>
+                <div class="launchpad-search" aria-hidden="true"><span>⌕</span><span>Search</span></div>
+                <section class="launchpad-grid" style="margin-top:16px;">
+                  ${launchpadItems.map(
+                    (item) =>
+                      html`<button class="launchpad-tile" type="button" @click=${() => {
+                        item.onClick();
+                        state.launchpadOpen = false;
+                      }}><span class="launchpad-tile__plate"><span class="launchpad-tile__icon">${item.icon}</span></span><span class="launchpad-tile__label">${item.label}</span></button>`,
+                  )}
+                </section>
+                <div class="launchpad-dots" aria-hidden="true"><span class="is-active"></span><span></span></div>
+              </div>
+            </section>`
+          : nothing
+      }
       ${renderExecApprovalPrompt(state)}
       ${renderGatewayUrlConfirmation(state)}
     </div>

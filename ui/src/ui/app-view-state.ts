@@ -64,6 +64,7 @@ export type AppViewState = {
   dashboardAgentSearch: string;
   dashboardAgentSort: "name" | "id";
   dashboardNotice: { tone: "success" | "info" | "error"; text: string } | null;
+  launchpadOpen: boolean;
   cronViewMode: "month" | "week" | "day";
   cronDayModalKey: string | null;
   restoreFileName: string;
