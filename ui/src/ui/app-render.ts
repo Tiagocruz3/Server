@@ -451,12 +451,16 @@ export function renderApp(state: AppViewState) {
                           state.setTab(item.tab);
                         }
 
-                        // Hard fallback: force path navigation if tab did not switch in-place.
+                        // Hard fallback: always force route navigation for Agent Me menu actions.
                         const targetPath = normalizePath(pathForTab(item.tab, state.basePath));
-                        if (window.location.pathname !== targetPath) {
-                          window.location.assign(targetPath);
-                          return;
+                        const targetUrl = new URL(window.location.href);
+                        targetUrl.pathname = targetPath;
+                        if (item.tab !== "chat") {
+                          targetUrl.searchParams.delete("session");
                         }
+                        targetUrl.searchParams.set("_nav", `${Date.now()}`);
+                        window.location.assign(targetUrl.toString());
+                        return;
                       }
 
                       closeAllTopMenus(host);
