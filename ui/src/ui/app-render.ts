@@ -52,7 +52,13 @@ import {
 } from "./controllers/skills.ts";
 import { loadUsage, loadSessionTimeSeries, loadSessionLogs } from "./controllers/usage.ts";
 import { icons } from "./icons.ts";
-import { normalizeBasePath, subtitleForTab, titleForTab } from "./navigation.ts";
+import {
+  normalizeBasePath,
+  normalizePath,
+  pathForTab,
+  subtitleForTab,
+  titleForTab,
+} from "./navigation.ts";
 
 // Module-scope debounce for usage date changes (avoids type-unsafe hacks on state object)
 let usageDateDebounceTimeout: number | null = null;
@@ -443,6 +449,13 @@ export function renderApp(state: AppViewState) {
                             state.cronViewMode = "month";
                           }
                           state.setTab(item.tab);
+                        }
+
+                        // Hard fallback: force path navigation if tab did not switch in-place.
+                        const targetPath = normalizePath(pathForTab(item.tab, state.basePath));
+                        if (window.location.pathname !== targetPath) {
+                          window.location.assign(targetPath);
+                          return;
                         }
                       }
 
