@@ -224,6 +224,9 @@ export async function refreshActiveTab(host: SettingsHost) {
   if (host.tab === "skills") {
     await loadSkills(host as unknown as AgentMeApp);
   }
+  if (host.tab === "memory") {
+    await loadMemoryFiles(host as unknown as AgentMeApp);
+  }
   if (host.tab === "agents") {
     await loadAgents(host as unknown as AgentMeApp);
     await loadConfig(host as unknown as AgentMeApp);
