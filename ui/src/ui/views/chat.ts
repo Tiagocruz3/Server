@@ -260,7 +260,7 @@ export function renderChat(props: ChatProps) {
           ? html`
               <div class="chat-welcome">
                 <div class="chat-welcome__icon">
-                  <img class="chat-welcome__icon-image" src="/favicon.svg" alt="Agent Me" />
+                  <img class="chat-welcome__icon-image" src="/logo.png" alt="Agent Me" />
                 </div>
                 <h2 class="chat-welcome__title">How can I help you today?</h2>
                 <div class="chat-welcome__status">

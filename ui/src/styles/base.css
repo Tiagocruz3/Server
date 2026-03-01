@@ -266,6 +266,24 @@ select {
   color: inherit;
 }
 
+/* Standalone input class styling */
+.input {
+  border: 1px solid var(--border-color);
+  background: var(--bg-card);
+  color: var(--text-primary);
+  border-radius: var(--radius-md);
+  padding: 8px 12px;
+  outline: none;
+  transition:
+    border-color var(--duration-fast) ease,
+    box-shadow var(--duration-fast) ease;
+}
+
+.input:focus {
+  border-color: var(--ring);
+  box-shadow: var(--focus-ring);
+}
+
 ::selection {
   background: var(--accent-subtle);
   color: var(--text-strong);

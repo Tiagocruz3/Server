@@ -138,7 +138,6 @@ export class AgentMeApp extends LitElement {
     summary: string;
   }> = [];
   @state() dashboardAgentModal: string | null = null;
-  @state() dashboardView: "overview" | "autopilot" | "results" = "overview";
   @state() dashboardAgentChatDraft = "";
   @state() dashboardAgentTaskDraft = "";
   @state() dashboardAgentSystemPromptDraft = "";
@@ -244,8 +243,14 @@ export class AgentMeApp extends LitElement {
   @state() agentsList: AgentsListResult | null = null;
   @state() agentsError: string | null = null;
   @state() agentsSelectedId: string | null = null;
-  @state() agentsPanel: "overview" | "files" | "tools" | "skills" | "channels" | "cron" =
-    "overview";
+  @state() agentsPanel:
+    | "overview"
+    | "files"
+    | "systemPrompt"
+    | "tools"
+    | "skills"
+    | "channels"
+    | "cron" = "overview";
   @state() agentFilesLoading = false;
   @state() agentFilesError: string | null = null;
   @state() agentFilesList: AgentsFilesListResult | null = null;

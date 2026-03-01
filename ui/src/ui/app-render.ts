@@ -71,6 +71,7 @@ const debouncedLoadUsage = (state: UsageState) => {
 import { confirmInApp, promptInApp } from "./in-app-dialog.ts";
 import { renderAgentsDashboard } from "./views/agents-dashboard.ts";
 import { renderAgents } from "./views/agents.ts";
+import { renderAutopilot } from "./views/autopilot.ts";
 import { renderChannels } from "./views/channels.ts";
 import { renderChat } from "./views/chat.ts";
 import { renderConfig } from "./views/config.ts";
@@ -84,6 +85,7 @@ import { renderLogs } from "./views/logs.ts";
 import { renderMemory } from "./views/memory.ts";
 import { renderNodes } from "./views/nodes.ts";
 import { renderOverview } from "./views/overview.ts";
+import { renderResults } from "./views/results.ts";
 import { renderSessions } from "./views/sessions.ts";
 import { renderSkills } from "./views/skills.ts";
 import { renderUsage } from "./views/usage.ts";
@@ -316,7 +318,7 @@ export function renderApp(state: AppViewState) {
         <button class="topbar-left" type="button" @click=${() => state.setTab("chat")} title="Open Chat" aria-label="Open Chat">
           <img
             class="topbar-app-icon"
-            src=${basePath ? `${basePath}/agentme-logo.jpg` : "/agentme-logo.jpg"}
+            src=${basePath ? `${basePath}/logo.png` : "/logo.png"}
             alt="Agent Me"
           />
           <div class="brand">
@@ -346,7 +348,6 @@ export function renderApp(state: AppViewState) {
                   label: "Agent Dashboard",
                   sub: "Core AI operations and workforce overview",
                   tab: "dashboard" as const,
-                  dashboardView: "overview" as const,
                   isNew: true,
                 },
                 {
@@ -360,16 +361,14 @@ export function renderApp(state: AppViewState) {
                   icon: "🛡️",
                   label: "Autopilot + Emergency Stop",
                   sub: "Assisted/full control modes with hard stop",
-                  tab: "dashboard" as const,
-                  dashboardView: "autopilot" as const,
+                  tab: "autopilot" as const,
                   isNew: true,
                 },
                 {
                   icon: "📦",
                   label: "Task Results Envelope Store",
                   sub: "Backend result rows (not chat parsing dependent)",
-                  tab: "dashboard" as const,
-                  dashboardView: "results" as const,
+                  tab: "results" as const,
                   isNew: true,
                 },
                 {
@@ -429,19 +428,10 @@ export function renderApp(state: AppViewState) {
                       }
 
                       if ("tab" in item && item.tab) {
-                        if (item.tab === "dashboard") {
-                          const targetView =
-                            ("dashboardView" in item && item.dashboardView) || "overview";
-                          state.dashboardView = targetView;
-                          state.setTab("dashboard");
-                          // Re-assert view after tab refresh for reliability.
-                          state.dashboardView = targetView;
-                        } else {
-                          if (item.tab === "cron") {
-                            state.cronViewMode = "month";
-                          }
-                          state.setTab(item.tab);
+                        if (item.tab === "cron") {
+                          state.cronViewMode = "month";
                         }
+                        state.setTab(item.tab);
 
                         // Hard fallback: always force route navigation for Agent Me menu actions.
                         const targetPath = normalizePath(pathForTab(item.tab, state.basePath));
@@ -575,12 +565,7 @@ export function renderApp(state: AppViewState) {
           state.tab === "dashboard"
             ? renderDashboard({
                 connected: state.connected,
-                dashboardView: state.dashboardView,
                 agentCount: state.agentsList?.count ?? state.agentsList?.agents?.length ?? 0,
-                sessionsCount,
-                presenceCount,
-                queuedCount: state.chatQueue.length,
-                autopilotMode,
                 recentActivity: (Array.isArray(state.eventLog) ? state.eventLog : [])
                   .slice(-12)
                   .toReversed()
@@ -588,26 +573,26 @@ export function renderApp(state: AppViewState) {
                     label: String(entry?.event ?? "event"),
                     ts: entry?.ts ? new Date(entry.ts).toLocaleTimeString() : "",
                   })),
-                featuredAgents: (
-                  (state.agentsList?.agents ?? []) as Array<{
-                    id?: string;
-                    name?: string;
-                    identity?: { name?: string; emoji?: string };
-                  }>
-                ).map((a, idx) => ({
-                  id: a.id || `agent-${idx}`,
-                  name:
-                    a.id === "main"
-                      ? state.assistantName || a.name || a.identity?.name || "Main Agent"
-                      : a.name || a.identity?.name || a.id || "Agent",
-                  role: `Agent ID: ${a.id || "unknown"}`,
-                  accent: ["#06b6d4", "#3b82f6", "#8b5cf6", "#22c55e"][idx % 4],
-                  icon: a.identity?.emoji || "🤖",
-                })),
+                agentsList: {
+                  count: state.agentsList?.count ?? state.agentsList?.agents?.length ?? 0,
+                  agents: (
+                    (state.agentsList?.agents ?? []) as Array<{
+                      id?: string;
+                      name?: string;
+                      identity?: { name?: string; emoji?: string };
+                    }>
+                  ).map((a, idx) => ({
+                    id: a.id || `agent-${idx}`,
+                    name:
+                      a.id === "main"
+                        ? a.identity?.name || a.name || state.assistantName || "Main Agent"
+                        : a.identity?.name || a.name || a.id || "Agent",
+                    role: `Agent ID: ${a.id || "unknown"}`,
+                    accent: ["#06b6d4", "#3b82f6", "#8b5cf6", "#22c55e"][idx % 4],
+                    icon: a.identity?.emoji || "🤖",
+                  })),
+                },
                 agentModal: state.dashboardAgentModal,
-                agentChatDraft: state.dashboardAgentChatDraft,
-                agentTaskDraft: state.dashboardAgentTaskDraft,
-                agentSystemPromptDraft: state.dashboardAgentSystemPromptDraft,
                 agentAvatarDraft: state.dashboardAgentAvatarDraft,
                 agentSearch: state.dashboardAgentSearch,
                 agentSort: state.dashboardAgentSort,
@@ -659,14 +644,6 @@ export function renderApp(state: AppViewState) {
                   state.dashboardNotice = null;
                 },
                 onOpenTab: (tab) => state.setTab(tab),
-                onOpenAppChat: (app) => {
-                  state.setTab("chat");
-                  state.chatMessage = `[${app}] Open agent chat and summarize current status.`;
-                  state.dashboardNotice = {
-                    tone: "info",
-                    text: `${app}: opened in chat composer.`,
-                  };
-                },
                 onAddAgent: () => {
                   state.setTab("chat");
                   state.chatMessage =
@@ -677,69 +654,21 @@ export function renderApp(state: AppViewState) {
                   state.setTab("agents");
                   state.agentsPanel = "overview";
                 },
+                onEditAgentAvatar: (agentId, _currentAvatar) => {
+                  state.dashboardAgentModal = agentId;
+                  state.dashboardAgentAvatarDraft = "";
+                },
                 onAgentSearchChange: (text) => {
                   state.dashboardAgentSearch = text;
                 },
                 onAgentSortChange: (sort) => {
                   state.dashboardAgentSort = sort;
                 },
-                onOpenAgentModal: (app) => {
-                  state.dashboardAgentModal = app;
-                  state.dashboardAgentChatDraft = `Run ${app} and summarize current status + next action.`;
-                  state.dashboardAgentTaskDraft = "";
-                  state.dashboardAgentSystemPromptDraft = "";
-                  state.dashboardAgentAvatarDraft = "";
-                },
                 onCloseAgentModal: () => {
                   state.dashboardAgentModal = null;
                 },
-                onAgentChatDraftChange: (text) => {
-                  state.dashboardAgentChatDraft = text;
-                },
-                onAgentTaskDraftChange: (text) => {
-                  state.dashboardAgentTaskDraft = text;
-                },
-                onAgentSystemPromptDraftChange: (text) => {
-                  state.dashboardAgentSystemPromptDraft = text;
-                },
                 onAgentAvatarDraftChange: (text) => {
                   state.dashboardAgentAvatarDraft = text;
-                },
-                onAgentSendChat: () => {
-                  const app = state.dashboardAgentModal ?? "main";
-                  const text = state.dashboardAgentChatDraft.trim();
-                  state.setTab("chat");
-                  if (app === "__new__") {
-                    state.chatMessage = `Create a new agent from this request: ${text || "general operations assistant"}. Return suggested agent id, purpose, tool policy, and starter system prompt.`;
-                  } else {
-                    state.chatMessage = `[${app}] ${text || `Run ${app} and summarize current status.`}`;
-                  }
-                  state.dashboardAgentModal = null;
-                },
-                onAgentSetTask: () => {
-                  const app = state.dashboardAgentModal ?? "main";
-                  const text = state.dashboardAgentTaskDraft.trim();
-                  const fallback = "Create and queue one actionable task for this agent.";
-                  state.setTab("chat");
-                  state.chatMessage =
-                    app === "__new__"
-                      ? `Design a new agent and first task from this request: ${text || fallback}`
-                      : `[${app}] task: ${text || fallback}`;
-                  state.dashboardAgentModal = null;
-                },
-                onAgentSaveSystemPrompt: () => {
-                  const app = state.dashboardAgentModal ?? "emc2";
-                  const text = state.dashboardAgentSystemPromptDraft.trim();
-                  if (!text) {
-                    return;
-                  }
-                  state.eventLog = [
-                    ...state.eventLog,
-                    {
-                      ts: Date.now(),
-                      event: `agent.systemPrompt.saved:${app}`,
-                    },
-                  ];
                 },
                 onAgentSaveAvatar: () => {
                   const app = state.dashboardAgentModal ?? "main";
@@ -755,9 +684,140 @@ export function renderApp(state: AppViewState) {
                   ].slice(0, 200);
                   state.dashboardAgentModal = null;
                 },
+              })
+            : nothing
+        }
+
+        ${
+          state.tab === "autopilot"
+            ? renderAutopilot({
+                connected: state.connected,
+                autopilotMode,
+                recentActivity: (Array.isArray(state.eventLog) ? state.eventLog : [])
+                  .slice(-12)
+                  .toReversed()
+                  .map((entry) => ({
+                    label: String(entry?.event ?? "event"),
+                    ts: entry?.ts ? new Date(entry.ts).toLocaleTimeString() : "",
+                  })),
+                queuedCount: state.chatQueue.length,
+                onSetAutopilotMode: (mode) => {
+                  state.applySettings({
+                    ...state.settings,
+                    autopilotMode: mode,
+                    chatFocusMode: mode !== "off",
+                  });
+                  if (state.client && state.connected) {
+                    void state.client.request("set-autopilot", { mode }).catch((err) => {
+                      state.lastError = String(err);
+                    });
+                  }
+                  if (mode === "full") {
+                    state.eventLog = [
+                      { ts: Date.now(), event: "autopilot.full.enabled" },
+                      ...state.eventLog,
+                    ].slice(0, 200);
+                  }
+                  state.eventLog = [
+                    { ts: Date.now(), event: `autopilot.mode.${mode}` },
+                    ...state.eventLog,
+                  ].slice(0, 200);
+                },
+                onEmergencyStop: () => {
+                  void confirmInApp("Emergency stop all pending actions?", "Emergency stop").then(
+                    (approved) => {
+                      if (!approved) {
+                        return;
+                      }
+                      state.chatQueue = [];
+                      state.chatRunId = null;
+                      state.chatStream = null;
+                      state.chatStreamStartedAt = null;
+                      state.applySettings({
+                        ...state.settings,
+                        autopilotMode: "off",
+                        chatFocusMode: false,
+                      });
+                      if (state.client && state.connected) {
+                        void state.client.request("set-autopilot", { mode: "off" }).catch((err) => {
+                          state.lastError = String(err);
+                        });
+                        void state.client.request("agent-results.clear", {}).catch(() => {
+                          // non-fatal
+                        });
+                      }
+                      state.agentResults = [];
+                      state.eventLog = [
+                        { ts: Date.now(), event: "autopilot.emergency_stop" },
+                        ...state.eventLog,
+                      ].slice(0, 200);
+                    },
+                  );
+                },
+                onOpenTab: (tab) => state.setTab(tab),
+              })
+            : nothing
+        }
+
+        ${
+          state.tab === "results"
+            ? renderResults({
+                taskResults: (() => {
+                  const rows = (Array.isArray(state.agentResults) ? state.agentResults : []).map(
+                    (item) => ({
+                      app:
+                        item.appId === "realestate"
+                          ? "Realestate"
+                          : item.appId === "birdx"
+                            ? "Bird X"
+                            : "Agent Me",
+                      appId: item.appId,
+                      summary: item.summary,
+                      ts: item.ts ? new Date(item.ts).toLocaleTimeString() : "",
+                      status: item.status,
+                      schemaMismatch: false,
+                    }),
+                  );
+                  if (rows.length === 0) {
+                    const fallback = (Array.isArray(state.chatMessages) ? state.chatMessages : [])
+                      .filter(
+                        (m) =>
+                          m &&
+                          typeof m === "object" &&
+                          (m as { role?: string }).role === "assistant",
+                      )
+                      .slice(-5)
+                      .toReversed()
+                      .map((m) => {
+                        const parsed = extractDashboardTaskResult(
+                          (m as { content?: unknown }).content,
+                        );
+                        return {
+                          app: parsed.app,
+                          appId: parsed.appId,
+                          summary: parsed.summary,
+                          ts: "",
+                          status: parsed.status,
+                          schemaMismatch: parsed.schemaMismatch,
+                        };
+                      });
+                    return fallback;
+                  }
+                  return rows;
+                })(),
+                onViewResult: (app) => {
+                  state.setTab("chat");
+                  const basePrompt =
+                    app === "realestate"
+                      ? "Show latest Realestate result in a clean summary card format."
+                      : app === "birdx"
+                        ? "Show latest Bird X result with actionable next steps."
+                        : "Show latest Agent Me task result summary.";
+                  state.chatMessage = `${basePrompt}\n\n${taskResultSchemaInstruction(app)}`;
+                },
                 onRunTask: (app) => {
                   const appKey: "realestate" | "birdx" | "emc2" =
-                    appKey === "realestate" || app === "birdx" || app === "emc2" ? app : "emc2";
+                    app === "realestate" || app === "birdx" || app === "emc2" ? app : "emc2";
                   void confirmInApp(
                     appKey === "birdx"
                       ? "Run Bird X task now? This may prepare social account actions."
@@ -783,7 +843,7 @@ export function renderApp(state: AppViewState) {
                         : appKey === "birdx"
                           ? "Run Bird X workflow now: list 25 non-followers and prepare unfollow command plan."
                           : "Agent Me run task now: produce top priorities and next actions.";
-                    const prompt = `${basePrompt}\n\n${taskResultSchemaInstruction(app)}`;
+                    const prompt = `${basePrompt}\n\n${taskResultSchemaInstruction(appKey)}`;
 
                     state.agentResults = [
                       {
@@ -853,64 +913,6 @@ export function renderApp(state: AppViewState) {
                     void state.handleSendChat(prompt);
                   });
                 },
-                onScheduleTask: (app) => {
-                  const appKey: "realestate" | "birdx" | "emc2" =
-                    app === "realestate" || app === "birdx" || app === "emc2" ? app : "emc2";
-                  void confirmInApp(
-                    "Create scheduled automation for this app? You can edit timing before saving.",
-                    "Approve schedule",
-                  ).then((approved) => {
-                    if (!approved) {
-                      state.eventLog = [
-                        { ts: Date.now(), event: `approval.denied.${app}.schedule` },
-                        ...state.eventLog,
-                      ].slice(0, 200);
-                      return;
-                    }
-                    state.eventLog = [
-                      { ts: Date.now(), event: `approval.granted.${app}.schedule` },
-                      ...state.eventLog,
-                    ].slice(0, 200);
-                    state.cronForm = {
-                      ...state.cronForm,
-                      name:
-                        appKey === "realestate"
-                          ? "Realestate Daily Run"
-                          : appKey === "birdx"
-                            ? "Bird X Daily Cleanup"
-                            : "Agent Me Daily Brief",
-                      description: "Created from Dashboard app card",
-                      scheduleKind: "cron",
-                      cronExpr: "0 8 * * *",
-                      cronTz: "Australia/Brisbane",
-                      sessionTarget: "isolated",
-                      payloadKind: "agentTurn",
-                      agentId: "main",
-                      payloadText:
-                        appKey === "realestate"
-                          ? "Run realestate workflow and return structured summary cards."
-                          : appKey === "birdx"
-                            ? "Run Bird X workflow and return structured summary cards."
-                            : "Generate Agent Me daily mission summary with top priorities.",
-                      deliveryMode: "announce",
-                    };
-                    state.setTab("cron");
-                    state.dashboardNotice = {
-                      tone: "success",
-                      text: `${appKey} schedule prefilled in Scheduler.`,
-                    };
-                  });
-                },
-                onViewResult: (app) => {
-                  state.setTab("chat");
-                  const basePrompt =
-                    appKey === "realestate"
-                      ? "Show latest Realestate result in a clean summary card format."
-                      : appKey === "birdx"
-                        ? "Show latest Bird X result with actionable next steps."
-                        : "Show latest Agent Me task result summary.";
-                  state.chatMessage = `${basePrompt}\n\n${taskResultSchemaInstruction(app)}`;
-                },
                 onFixSchema: (app) => {
                   state.setTab("chat");
                   const prompt = [
@@ -920,75 +922,7 @@ export function renderApp(state: AppViewState) {
                   ].join("\n\n");
                   void state.handleSendChat(prompt);
                 },
-                onRetryChat: () => {
-                  state.setTab("chat");
-                  state.dashboardNotice = { tone: "info", text: "Retry path opened: chat." };
-                },
-                onRetryScheduler: () => {
-                  state.setTab("cron");
-                  void state.loadCron();
-                  state.dashboardNotice = {
-                    tone: "info",
-                    text: "Retry path opened: scheduler refresh started.",
-                  };
-                },
-                onRetryRestore: () => {
-                  state.setTab("restore");
-                  state.dashboardNotice = { tone: "info", text: "Retry path opened: restore." };
-                },
-                onSetAutopilotMode: (mode) => {
-                  state.applySettings({
-                    ...state.settings,
-                    autopilotMode: mode,
-                    chatFocusMode: mode !== "off",
-                  });
-                  if (state.client && state.connected) {
-                    void state.client.request("set-autopilot", { mode }).catch((err) => {
-                      state.lastError = String(err);
-                    });
-                  }
-                  if (mode === "full") {
-                    state.eventLog = [
-                      { ts: Date.now(), event: "autopilot.full.enabled" },
-                      ...state.eventLog,
-                    ].slice(0, 200);
-                  }
-                  state.eventLog = [
-                    { ts: Date.now(), event: `autopilot.mode.${mode}` },
-                    ...state.eventLog,
-                  ].slice(0, 200);
-                },
-                onEmergencyStop: () => {
-                  void confirmInApp("Emergency stop all pending actions?", "Emergency stop").then(
-                    (approved) => {
-                      if (!approved) {
-                        return;
-                      }
-                      state.chatQueue = [];
-                      state.chatRunId = null;
-                      state.chatStream = null;
-                      state.chatStreamStartedAt = null;
-                      state.applySettings({
-                        ...state.settings,
-                        autopilotMode: "off",
-                        chatFocusMode: false,
-                      });
-                      if (state.client && state.connected) {
-                        void state.client.request("set-autopilot", { mode: "off" }).catch((err) => {
-                          state.lastError = String(err);
-                        });
-                        void state.client.request("agent-results.clear", {}).catch(() => {
-                          // non-fatal
-                        });
-                      }
-                      state.agentResults = [];
-                      state.eventLog = [
-                        { ts: Date.now(), event: "autopilot.emergency_stop" },
-                        ...state.eventLog,
-                      ].slice(0, 200);
-                    },
-                  );
-                },
+                onOpenTab: (tab) => state.setTab(tab),
               })
             : nothing
         }
@@ -1587,7 +1521,7 @@ export function renderApp(state: AppViewState) {
                   state.agentSkillsError = null;
                   state.agentSkillsAgentId = null;
                   void loadAgentIdentity(state, agentId);
-                  if (state.agentsPanel === "files") {
+                  if (state.agentsPanel === "files" || state.agentsPanel === "systemPrompt") {
                     void loadAgentFiles(state, agentId);
                   }
                   if (state.agentsPanel === "skills") {
@@ -1596,7 +1530,7 @@ export function renderApp(state: AppViewState) {
                 },
                 onSelectPanel: (panel) => {
                   state.agentsPanel = panel;
-                  if (panel === "files" && resolvedAgentId) {
+                  if ((panel === "files" || panel === "systemPrompt") && resolvedAgentId) {
                     if (state.agentFilesList?.agentId !== resolvedAgentId) {
                       state.agentFilesList = null;
                       state.agentFilesError = null;
@@ -2055,7 +1989,10 @@ export function renderApp(state: AppViewState) {
                   id: agent.id,
                   label:
                     agent.id === "main"
-                      ? state.assistantName
+                      ? agent.identity?.name?.trim() ||
+                        agent.name?.trim() ||
+                        state.assistantName ||
+                        "Main Agent"
                       : agent.identity?.name?.trim() || agent.name?.trim() || agent.id,
                 })),
               })

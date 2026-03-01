@@ -24,7 +24,14 @@ import {
   formatNextRun,
 } from "../presenter.ts";
 
-export type AgentsPanel = "overview" | "files" | "tools" | "skills" | "channels" | "cron";
+export type AgentsPanel =
+  | "overview"
+  | "files"
+  | "systemPrompt"
+  | "tools"
+  | "skills"
+  | "channels"
+  | "cron";
 
 export type AgentsProps = {
   loading: boolean;
@@ -653,6 +660,23 @@ export function renderAgents(props: AgentsProps) {
                   : nothing
               }
               ${
+                props.activePanel === "systemPrompt"
+                  ? renderAgentSystemPrompt({
+                      agentId: selectedAgent.id,
+                      agentFilesList: props.agentFilesList,
+                      agentFilesLoading: props.agentFilesLoading,
+                      agentFilesError: props.agentFilesError,
+                      agentFileContents: props.agentFileContents,
+                      agentFileDrafts: props.agentFileDrafts,
+                      agentFileSaving: props.agentFileSaving,
+                      onLoadFiles: props.onLoadFiles,
+                      onFileDraftChange: props.onFileDraftChange,
+                      onFileReset: props.onFileReset,
+                      onFileSave: props.onFileSave,
+                    })
+                  : nothing
+              }
+              ${
                 props.activePanel === "tools"
                   ? renderAgentTools({
                       agentId: selectedAgent.id,
@@ -756,7 +780,8 @@ function renderAgentHeader(
       </div>
       <div class="agent-quick-actions">
         <button class="btn" type="button" @click=${() => onSelectPanel("overview")}>🖼️ Profile</button>
-        <button class="btn" type="button" @click=${() => onSelectPanel("files")}>📝 System Prompt</button>
+        <button class="btn" type="button" @click=${() => onSelectPanel("files")}>📝 Memory</button>
+        <button class="btn" type="button" @click=${() => onSelectPanel("systemPrompt")}>📋 System Prompt</button>
         <button class="btn" type="button" @click=${() => onSelectPanel("tools")}>🧬 Clone Setup</button>
         <button
           class="btn primary"
@@ -776,7 +801,8 @@ function renderAgentHeader(
 function renderAgentTabs(active: AgentsPanel, onSelect: (panel: AgentsPanel) => void) {
   const tabs: Array<{ id: AgentsPanel; label: string }> = [
     { id: "overview", label: "Overview" },
-    { id: "files", label: "Files" },
+    { id: "files", label: "Memory" },
+    { id: "systemPrompt", label: "System Prompt" },
     { id: "tools", label: "Tools" },
     { id: "skills", label: "Skills" },
     { id: "channels", label: "Channels" },
@@ -1426,6 +1452,143 @@ function renderAgentFiles(params: {
                 </div>
               </div>
             `
+      }
+    </section>
+  `;
+}
+
+function renderAgentSystemPrompt(params: {
+  agentId: string;
+  agentFilesList: AgentsFilesListResult | null;
+  agentFilesLoading: boolean;
+  agentFilesError: string | null;
+  agentFileContents: Record<string, string>;
+  agentFileDrafts: Record<string, string>;
+  agentFileSaving: boolean;
+  onLoadFiles: (agentId: string) => void;
+  onFileDraftChange: (name: string, content: string) => void;
+  onFileReset: (name: string) => void;
+  onFileSave: (name: string) => void;
+}) {
+  const SYSTEM_PROMPT_FILE = "system.prompt";
+  const list = params.agentFilesList?.agentId === params.agentId ? params.agentFilesList : null;
+  const files = list?.files ?? [];
+  const systemPromptFile = files.find((f) => f.name === SYSTEM_PROMPT_FILE);
+  const hasSystemPrompt = !!systemPromptFile && !systemPromptFile.missing;
+
+  const baseContent = params.agentFileContents[SYSTEM_PROMPT_FILE] ?? "";
+  const draft = params.agentFileDrafts[SYSTEM_PROMPT_FILE] ?? baseContent;
+  const isDirty = draft !== baseContent;
+
+  // Auto-load files when panel opens
+  if (!list && !params.agentFilesLoading && !params.agentFilesError) {
+    setTimeout(() => params.onLoadFiles(params.agentId), 0);
+  }
+
+  return html`
+    <section class="card">
+      <div class="row" style="justify-content: space-between; align-items: center;">
+        <div>
+          <div class="card-title">System Prompt</div>
+          <div class="card-sub">Define the agent's core behavior, personality, and instructions.</div>
+        </div>
+        <div class="row" style="gap: 8px;">
+          <button
+            class="btn btn--sm"
+            ?disabled=${params.agentFilesLoading}
+            @click=${() => params.onLoadFiles(params.agentId)}
+          >
+            ${params.agentFilesLoading ? "Loading…" : "Refresh"}
+          </button>
+        </div>
+      </div>
+      
+      ${
+        params.agentFilesError
+          ? html`<div class="callout danger" style="margin-top: 12px">${params.agentFilesError}</div>`
+          : nothing
+      }
+      
+      ${
+        !list
+          ? html`
+              <div class="callout info" style="margin-top: 12px">Loading agent workspace...</div>
+            `
+          : html`
+            <div style="margin-top: 16px;">
+              ${
+                !hasSystemPrompt && !baseContent && !draft
+                  ? html`
+                    <div class="callout info" style="margin-bottom: 12px;">
+                      No system prompt file found. Click "Create" to add one.
+                    </div>
+                    <button
+                      class="btn primary"
+                      @click=${() => params.onFileDraftChange(SYSTEM_PROMPT_FILE, "You are a helpful AI assistant.\n")}
+                    >
+                      + Create System Prompt
+                    </button>
+                  `
+                  : html`
+                    <div class="row" style="justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                      <div class="mono" style="font-size: 13px; color: var(--muted);">
+                        File: ${SYSTEM_PROMPT_FILE}
+                        ${
+                          systemPromptFile?.missing
+                            ? html`
+                                <span class="agent-pill warn" style="margin-left: 8px">missing</span>
+                              `
+                            : nothing
+                        }
+                      </div>
+                      <div class="row" style="gap: 8px;">
+                        <button
+                          class="btn btn--sm"
+                          ?disabled=${!isDirty}
+                          @click=${() => params.onFileReset(SYSTEM_PROMPT_FILE)}
+                        >
+                          Reset
+                        </button>
+                        <button
+                          class="btn btn--sm primary"
+                          ?disabled=${params.agentFileSaving || !isDirty}
+                          @click=${() => params.onFileSave(SYSTEM_PROMPT_FILE)}
+                        >
+                          ${params.agentFileSaving ? "Saving…" : "Save"}
+                        </button>
+                      </div>
+                    </div>
+                    
+                    ${
+                      systemPromptFile?.missing
+                        ? html`
+                            <div class="callout info" style="margin-bottom: 12px">
+                              This file is missing. Saving will create it in the agent workspace.
+                            </div>
+                          `
+                        : nothing
+                    }
+                    
+                    <label class="field" style="margin: 0;">
+                      <textarea
+                        .value=${draft}
+                        placeholder="Enter the system prompt that defines this agent's behavior..."
+                        style="min-height: 400px; font-family: var(--mono); font-size: 13px; line-height: 1.6;"
+                        @input=${(e: Event) =>
+                          params.onFileDraftChange(
+                            SYSTEM_PROMPT_FILE,
+                            (e.target as HTMLTextAreaElement).value,
+                          )}
+                      ></textarea>
+                    </label>
+                    
+                    <div class="muted" style="margin-top: 8px; font-size: 12px;">
+                      Tip: The system prompt sets the foundation for how the agent responds. Be clear and specific about the agent's role, tone, and constraints.
+                    </div>
+                  `
+              }
+            </div>
+          `
       }
     </section>
   `;

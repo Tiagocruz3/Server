@@ -342,6 +342,15 @@ export type AgentsListResult = {
   agents: GatewayAgentRow[];
 };
 
+/** UI-ready agent representation for dashboard cards */
+export type AgentApp = {
+  id: string;
+  name: string;
+  role: string;
+  icon: string;
+  accent?: string;
+};
+
 export type AgentIdentityResult = {
   agentId: string;
   name: string;

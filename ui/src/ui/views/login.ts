@@ -15,7 +15,7 @@ export function renderLoginView(props: LoginViewProps) {
     <section class="login-screen">
       <div class="login-screen__card">
         <div class="login-screen__brand-wrap">
-          <img class="login-screen__logo" src="/agentme-logo.jpg" alt="Agent Me" />
+          <img class="login-screen__logo" src="/logo.png" alt="Agent Me" />
           <div class="login-screen__brand">Agent Me</div>
         </div>
         <h1>Sign in to your Agent Me Server</h1>

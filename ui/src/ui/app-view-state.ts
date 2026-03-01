@@ -56,7 +56,6 @@ export type AppViewState = {
     summary: string;
   }>;
   dashboardAgentModal: string | null;
-  dashboardView: "overview" | "autopilot" | "results";
   dashboardAgentChatDraft: string;
   dashboardAgentTaskDraft: string;
   dashboardAgentSystemPromptDraft: string;
@@ -152,7 +151,7 @@ export type AppViewState = {
   agentsList: AgentsListResult | null;
   agentsError: string | null;
   agentsSelectedId: string | null;
-  agentsPanel: "overview" | "files" | "tools" | "skills" | "channels" | "cron";
+  agentsPanel: "overview" | "files" | "systemPrompt" | "tools" | "skills" | "channels" | "cron";
   agentFilesLoading: boolean;
   agentFilesError: string | null;
   agentFilesList: AgentsFilesListResult | null;

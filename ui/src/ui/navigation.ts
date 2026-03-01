@@ -4,7 +4,17 @@ export const TAB_GROUPS = [
   { label: "Chat", tabs: ["chat"] },
   {
     label: "Control",
-    tabs: ["dashboard", "overview", "channels", "instances", "sessions", "usage", "cron"],
+    tabs: [
+      "dashboard",
+      "autopilot",
+      "results",
+      "overview",
+      "channels",
+      "instances",
+      "sessions",
+      "usage",
+      "cron",
+    ],
   },
   { label: "Agent", tabs: ["agents", "skills", "nodes"] },
   { label: "Settings", tabs: ["memory", "config", "restore", "debug", "logs"] },
@@ -13,6 +23,8 @@ export const TAB_GROUPS = [
 export type Tab =
   | "agents"
   | "dashboard"
+  | "autopilot"
+  | "results"
   | "overview"
   | "channels"
   | "instances"
@@ -31,6 +43,8 @@ export type Tab =
 const TAB_PATHS: Record<Tab, string> = {
   agents: "/agents",
   dashboard: "/dashboard",
+  autopilot: "/autopilot",
+  results: "/results",
   overview: "/overview",
   channels: "/channels",
   instances: "/instances",
