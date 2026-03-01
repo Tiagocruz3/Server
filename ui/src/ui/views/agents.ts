@@ -786,10 +786,7 @@ function renderAgentHeader(
         <button
           class="btn primary"
           type="button"
-          @click=${() => {
-            window.history.pushState({}, "", "/chat");
-            window.dispatchEvent(new PopStateEvent("popstate"));
-          }}
+          @click=${() => onSelectPanel("cron")}
         >
           ▶ Assign Task
         </button>
