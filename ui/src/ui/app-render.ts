@@ -656,36 +656,65 @@ export function renderApp(state: AppViewState) {
                   state.dashboardEditingAgentAvatar = "";
                 },
                 onSaveAgentWithImage: async (agentId, newName, imageFile) => {
-                  // Compress and convert image to base64
+                  console.log("[AgentMe] Starting image upload for agent:", agentId);
+
                   try {
+                    // Show loading state
+                    state.dashboardNotice = { text: "Processing image...", tone: "info" };
+
                     // Compress image to max 256x256 to avoid large websocket messages
+                    console.log("[AgentMe] Compressing image...");
                     const compressedBase64 = await compressImage(imageFile, {
                       maxWidth: 256,
                       maxHeight: 256,
                       quality: 0.8,
                     });
+                    console.log(
+                      "[AgentMe] Image compressed, size:",
+                      Math.round(compressedBase64.length / 1024),
+                      "KB",
+                    );
 
                     // Clear editing state before API call
                     state.dashboardEditingAgentId = null;
                     state.dashboardEditingAgentName = "";
                     state.dashboardEditingAgentAvatar = "";
 
+                    console.log("[AgentMe] Saving agent with image...");
                     const res = await saveAgent(state, agentId, {
                       name: newName,
                       avatar: compressedBase64,
                     });
+
                     if (res.ok) {
+                      console.log("[AgentMe] Agent saved successfully");
+                      state.dashboardNotice = {
+                        text: "Avatar updated successfully!",
+                        tone: "success",
+                      };
                       // Reload agents to show updated data
                       await loadAgents(state);
                     } else {
+                      console.error("[AgentMe] Failed to save agent:", res.error);
                       state.lastError = res.error;
+                      state.dashboardNotice = {
+                        text: `Failed to save: ${res.error}`,
+                        tone: "error",
+                      };
                     }
                   } catch (err) {
+                    console.error("[AgentMe] Image upload error:", err);
                     state.lastError = String(err);
+                    state.dashboardNotice = { text: `Error: ${String(err)}`, tone: "error" };
                     state.dashboardEditingAgentId = null;
                     state.dashboardEditingAgentName = "";
                     state.dashboardEditingAgentAvatar = "";
                   }
+
+                  // Clear notice after 3 seconds
+                  setTimeout(() => {
+                    state.dashboardNotice = null;
+                  }, 3000);
                 },
                 onEditingNameChange: (v) => {
                   state.dashboardEditingAgentName = v;

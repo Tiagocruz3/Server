@@ -9,39 +9,69 @@ export function compressImage(
   const { maxWidth = 256, maxHeight = 256, quality = 0.8 } = options;
 
   return new Promise((resolve, reject) => {
+    // Validate file type
+    if (!file.type.startsWith("image/")) {
+      reject(new Error("Please select a valid image file"));
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      reject(new Error("Image too large. Maximum size is 5MB"));
+      return;
+    }
+
     const img = new Image();
     const url = URL.createObjectURL(file);
 
     img.onload = () => {
       URL.revokeObjectURL(url);
 
-      // Calculate new dimensions
-      let { width, height } = img;
-      if (width > maxWidth || height > maxHeight) {
-        const ratio = Math.min(maxWidth / width, maxHeight / height);
-        width = Math.floor(width * ratio);
-        height = Math.floor(height * ratio);
-      }
+      try {
+        // Calculate new dimensions
+        let { width, height } = img;
+        if (width > maxWidth || height > maxHeight) {
+          const ratio = Math.min(maxWidth / width, maxHeight / height);
+          width = Math.floor(width * ratio);
+          height = Math.floor(height * ratio);
+        }
 
-      // Draw to canvas
-      const canvas = document.createElement("canvas");
-      canvas.width = width;
-      canvas.height = height;
-      const ctx = canvas.getContext("2d");
-      if (!ctx) {
-        reject(new Error("Failed to get canvas context"));
-        return;
-      }
-      ctx.drawImage(img, 0, 0, width, height);
+        // Draw to canvas
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) {
+          reject(new Error("Failed to get canvas context"));
+          return;
+        }
 
-      // Get compressed base64
-      const compressed = canvas.toDataURL("image/jpeg", quality);
-      resolve(compressed);
+        // Fill white background for JPEG
+        ctx.fillStyle = "#FFFFFF";
+        ctx.fillRect(0, 0, width, height);
+        ctx.drawImage(img, 0, 0, width, height);
+
+        // Get compressed base64
+        const compressed = canvas.toDataURL("image/jpeg", quality);
+
+        // Validate output size
+        const base64Size = compressed.length * 0.75; // Approximate byte size
+        if (base64Size > 100 * 1024) {
+          // If still too large, compress more
+          const moreCompressed = canvas.toDataURL("image/jpeg", 0.5);
+          resolve(moreCompressed);
+          return;
+        }
+
+        resolve(compressed);
+      } catch (err) {
+        reject(new Error(`Image processing failed: ${String(err)}`));
+      }
     };
 
     img.onerror = () => {
       URL.revokeObjectURL(url);
-      reject(new Error("Failed to load image"));
+      reject(new Error("Failed to load image. Please try a different file."));
     };
 
     img.src = url;
