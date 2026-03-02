@@ -105,17 +105,17 @@ export function resolveAssistantIdentity(params: {
   const fileIdentity = workspaceDir ? loadAgentIdentity(workspaceDir) : null;
 
   const name =
-    coerceIdentityValue(configAssistant?.name, MAX_ASSISTANT_NAME) ??
     coerceIdentityValue(agentIdentity?.name, MAX_ASSISTANT_NAME) ??
     coerceIdentityValue(fileIdentity?.name, MAX_ASSISTANT_NAME) ??
+    coerceIdentityValue(configAssistant?.name, MAX_ASSISTANT_NAME) ??
     DEFAULT_ASSISTANT_IDENTITY.name;
 
   const avatarCandidates = [
-    coerceIdentityValue(configAssistant?.avatar, MAX_ASSISTANT_AVATAR),
     coerceIdentityValue(agentIdentity?.avatar, MAX_ASSISTANT_AVATAR),
     coerceIdentityValue(agentIdentity?.emoji, MAX_ASSISTANT_AVATAR),
     coerceIdentityValue(fileIdentity?.avatar, MAX_ASSISTANT_AVATAR),
     coerceIdentityValue(fileIdentity?.emoji, MAX_ASSISTANT_AVATAR),
+    coerceIdentityValue(configAssistant?.avatar, MAX_ASSISTANT_AVATAR),
   ];
   const avatar =
     avatarCandidates.map((candidate) => normalizeAvatarValue(candidate)).find(Boolean) ??

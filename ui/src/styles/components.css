@@ -2325,6 +2325,14 @@
   border-radius: 999px;
   border-color: var(--border-strong);
   background: rgba(255, 255, 255, 0.04);
+  appearance: none;
+  min-height: 38px;
+  line-height: 1.1;
+}
+
+.agent-quick-actions .btn:hover,
+.agent-quick-actions .btn:active {
+  transform: none;
 }
 
 .agent-quick-actions .btn.primary {
@@ -2352,11 +2360,14 @@
 }
 
 .agent-tab {
+  appearance: none;
   border: 1px solid var(--border);
   border-radius: var(--radius-full);
   padding: 6px 14px;
+  min-height: 36px;
   font-size: 12px;
   font-weight: 600;
+  line-height: 1.1;
   background: var(--secondary);
   cursor: pointer;
   transition:
