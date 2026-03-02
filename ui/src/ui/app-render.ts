@@ -7,7 +7,7 @@ import { renderChatControls, renderThemeToggle } from "./app-render.helpers.ts";
 import { loadAgentFileContent, loadAgentFiles, saveAgentFile } from "./controllers/agent-files.ts";
 import { loadAgentIdentities, loadAgentIdentity } from "./controllers/agent-identity.ts";
 import { loadAgentSkills } from "./controllers/agent-skills.ts";
-import { loadAgents, saveAgent } from "./controllers/agents.ts";
+import { loadAgents, saveAgent, compressImage } from "./controllers/agents.ts";
 import { loadChannels } from "./controllers/channels.ts";
 import { loadChatHistory } from "./controllers/chat.ts";
 import {
@@ -655,26 +655,37 @@ export function renderApp(state: AppViewState) {
                   state.dashboardEditingAgentName = "";
                   state.dashboardEditingAgentAvatar = "";
                 },
-                onSaveAgentWithImage: (agentId, newName, imageFile) => {
-                  // Convert image to base64 and save
-                  const reader = new FileReader();
-                  reader.onload = async () => {
-                    const base64 = reader.result as string;
+                onSaveAgentWithImage: async (agentId, newName, imageFile) => {
+                  // Compress and convert image to base64
+                  try {
+                    // Compress image to max 256x256 to avoid large websocket messages
+                    const compressedBase64 = await compressImage(imageFile, {
+                      maxWidth: 256,
+                      maxHeight: 256,
+                      quality: 0.8,
+                    });
+
+                    // Clear editing state before API call
+                    state.dashboardEditingAgentId = null;
+                    state.dashboardEditingAgentName = "";
+                    state.dashboardEditingAgentAvatar = "";
+
                     const res = await saveAgent(state, agentId, {
                       name: newName,
-                      avatar: base64,
+                      avatar: compressedBase64,
                     });
                     if (res.ok) {
                       // Reload agents to show updated data
-                      void loadAgents(state);
+                      await loadAgents(state);
                     } else {
                       state.lastError = res.error;
                     }
-                  };
-                  reader.readAsDataURL(imageFile);
-                  state.dashboardEditingAgentId = null;
-                  state.dashboardEditingAgentName = "";
-                  state.dashboardEditingAgentAvatar = "";
+                  } catch (err) {
+                    state.lastError = String(err);
+                    state.dashboardEditingAgentId = null;
+                    state.dashboardEditingAgentName = "";
+                    state.dashboardEditingAgentAvatar = "";
+                  }
                 },
                 onEditingNameChange: (v) => {
                   state.dashboardEditingAgentName = v;
