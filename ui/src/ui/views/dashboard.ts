@@ -1,5 +1,4 @@
 import { html, nothing, type TemplateResult } from "lit";
-import { ref } from "lit/directives/ref.js";
 import type { TaskResult, RecentItem, AgentApp } from "../types.ts";
 
 export type DashboardProps = {
@@ -32,7 +31,6 @@ export type DashboardProps = {
 
 export function renderDashboard(props: DashboardProps) {
   const agents = props.agentsList?.agents ?? [];
-  let fileInputEl: HTMLInputElement | undefined;
 
   const filteredAgents = agents
     .filter((a) => {
@@ -122,7 +120,7 @@ export function renderDashboard(props: DashboardProps) {
                 const isEditing = props.editingAgentId === app.id;
 
                 if (isEditing) {
-                  return renderEditCard(app, accentColor, props, () => fileInputEl);
+                  return renderEditCard(app, accentColor, props);
                 }
 
                 return renderAgentCard(app, isDefault, accentColor, props);
@@ -177,23 +175,16 @@ function renderAgentCard(
   `;
 }
 
-function renderEditCard(
-  app: AgentApp,
-  accentColor: string,
-  props: DashboardProps,
-  getFileInput: () => HTMLInputElement | undefined,
-): TemplateResult {
+function renderEditCard(app: AgentApp, accentColor: string, props: DashboardProps): TemplateResult {
+  const fileInputId = `agent-avatar-file-${app.id}`;
+
   return html`
     <article class="agent-card agent-card--editing" style="--agent-accent: ${accentColor}">
       <input
         type="file"
+        id="${fileInputId}"
         accept="image/*"
         hidden
-        ${ref((el) => {
-          if (el) {
-            (getFileInput as (el: HTMLInputElement | undefined) => void)(el as HTMLInputElement);
-          }
-        })}
         @change=${(e: Event) => {
           const input = e.target as HTMLInputElement;
           const file = input.files?.[0];
@@ -225,7 +216,7 @@ function renderEditCard(
         <button 
           class="btn" 
           style="width: 100%; margin-bottom: 12px;"
-          @click=${() => getFileInput()?.click()}
+          @click=${() => document.getElementById(fileInputId)?.click()}
         >
           📷 Upload Profile Picture
         </button>

@@ -132,6 +132,15 @@ function resolveAssistantAvatarUrl(state: AppViewState): string | undefined {
   return identity?.avatarUrl;
 }
 
+function resolveAssistantName(state: AppViewState): string {
+  const list = state.agentsList?.agents ?? [];
+  const parsed = parseAgentSessionKey(state.sessionKey);
+  const agentId = parsed?.agentId ?? state.agentsList?.defaultId ?? "main";
+  const agent = list.find((entry) => entry.id === agentId);
+  // Priority: agent identity name > agent name > static assistant name > default
+  return agent?.identity?.name?.trim() || agent?.name?.trim() || state.assistantName || "Assistant";
+}
+
 function taskResultSchemaInstruction(appId: "realestate" | "birdx" | "emc2"): string {
   const appLabel =
     appId === "realestate" ? "realestate-agent" : appId === "birdx" ? "twitter-agent" : "emc2";
@@ -1973,7 +1982,7 @@ export function renderApp(state: AppViewState) {
                 onOpenSidebar: (content: string) => state.handleOpenSidebar(content),
                 onCloseSidebar: () => state.handleCloseSidebar(),
                 onSplitRatioChange: (ratio: number) => state.handleSplitRatioChange(ratio),
-                assistantName: state.assistantName,
+                assistantName: resolveAssistantName(state),
                 assistantAvatar: state.assistantAvatar,
                 agentChoices: (state.agentsList?.agents ?? []).map((agent) => ({
                   id: agent.id,
