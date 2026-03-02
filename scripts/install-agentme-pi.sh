@@ -4,7 +4,7 @@ set -euo pipefail
 # One-command installer for Agent Me Robot on Raspberry Pi OS 64-bit.
 # Downloads/updates repo, then runs bootstrap script.
 
-REPO_URL="https://github.com/Tiagocruz3/agent-me-server.git"
+REPO_URL="https://github.com/Agentme-AI/Server.git"
 REPO_DIR="${HOME}/agent-me-server"
 BOOTSTRAP_REL="scripts/bootstrap-agentme-pi.sh"
 

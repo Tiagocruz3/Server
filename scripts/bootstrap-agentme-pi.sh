@@ -2,13 +2,13 @@
 set -euo pipefail
 
 # Agent Me Robot bootstrap for fresh Raspberry Pi OS 64-bit
-# Repo: https://github.com/Tiagocruz3/agent-me-server
+# Repo: https://github.com/Agentme-AI/Server
 #
 # Usage:
 #   chmod +x bootstrap-agentme-pi.sh
 #   ./bootstrap-agentme-pi.sh
 
-REPO_URL="https://github.com/Tiagocruz3/agent-me-server.git"
+REPO_URL="https://github.com/Agentme-AI/Server.git"
 REPO_DIR="${HOME}/agent-me-server"
 STATE_DIR="${HOME}/.agentme"
 WORKSPACE_DIR="${STATE_DIR}/workspace"

@@ -7,7 +7,7 @@ set -euo pipefail
 # - Writes secure default config (token + trustedProxies)
 # - Installs/starts systemd user service
 
-REPO_URL="${AGENTME_REPO_URL:-https://github.com/Tiagocruz3/agent-me-server.git}"
+REPO_URL="${AGENTME_REPO_URL:-https://github.com/Agentme-AI/Server.git}"
 REPO_DIR="${AGENTME_REPO_DIR:-$HOME/agent-me-server}"
 REF="${AGENTME_REF:-main}"
 PORT="${AGENTME_PORT:-18789}"
