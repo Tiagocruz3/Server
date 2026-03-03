@@ -326,10 +326,16 @@ export function renderApp(state: AppViewState) {
       <header class="topbar">
         <button class="topbar-left" type="button" @click=${() => state.setTab("chat")} title="Open Chat" aria-label="Open Chat">
           <img
-            class="topbar-app-logo"
+            class="topbar-app-icon"
             src=${basePath ? `${basePath}/logo.png` : "/logo.png"}
             alt="Agent Me"
           />
+          <div class="brand">
+            <div class="brand-text">
+              <div class="brand-title">Agent Me</div>
+              <div class="brand-sub">Agent OS</div>
+            </div>
+          </div>
         </button>
 
         <nav class="topbar-menu" aria-label="Primary">
