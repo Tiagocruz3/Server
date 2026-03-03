@@ -198,6 +198,14 @@ function renderAttachmentPreview(props: ChatProps) {
   `;
 }
 
+function isAvatarImage(value: string | null | undefined): boolean {
+  if (!value) {
+    return false;
+  }
+  const trimmed = value.trim();
+  return trimmed.startsWith("/") || /^https?:\/\//i.test(trimmed) || /^data:image\//i.test(trimmed);
+}
+
 export function renderChat(props: ChatProps) {
   const canCompose = props.connected;
   const isBusy = props.sending || props.stream !== null;
@@ -207,7 +215,7 @@ export function renderChat(props: ChatProps) {
   const showReasoning = props.showThinking && reasoningLevel !== "off";
   const assistantIdentity = {
     name: props.assistantName,
-    avatar: props.assistantAvatar ?? props.assistantAvatarUrl ?? null,
+    avatar: props.assistantAvatarUrl ?? props.assistantAvatar ?? null,
   };
 
   const hasAttachments = (props.attachments?.length ?? 0) > 0;
@@ -268,7 +276,11 @@ export function renderChat(props: ChatProps) {
                 <h2 class="chat-welcome__title">How can I help you today?</h2>
                 <div class="chat-welcome__status">
                   <div class="chat-welcome__status-avatar">
-                    <img src="/apple-touch-icon.png" alt="Agent Me" />
+                    ${
+                      isAvatarImage(assistantIdentity.avatar)
+                        ? html`<img src=${assistantIdentity.avatar!} alt=${assistantIdentity.name} />`
+                        : assistantIdentity.avatar || assistantIdentity.name?.charAt(0) || "A"
+                    }
                   </div>
                   <div>
                     <div class="chat-welcome__status-name">${assistantIdentity.name}</div>
