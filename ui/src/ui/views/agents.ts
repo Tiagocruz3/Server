@@ -265,6 +265,41 @@ function resolveAgentEmoji(
   return "";
 }
 
+function isLikelyImageAvatar(value: string) {
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return false;
+  }
+  return (
+    trimmed.startsWith("data:image/") ||
+    trimmed.startsWith("http://") ||
+    trimmed.startsWith("https://") ||
+    /\.(png|jpe?g|gif|webp|svg|ico)$/i.test(trimmed)
+  );
+}
+
+function resolveAgentAvatarImage(
+  agent: { identity?: { avatar?: string; avatarUrl?: string } },
+  agentIdentity?: AgentIdentityResult | null,
+): string | null {
+  const candidates = [
+    agentIdentity?.avatarUrl,
+    agentIdentity?.avatar,
+    agent.identity?.avatarUrl,
+    agent.identity?.avatar,
+  ];
+  for (const candidate of candidates) {
+    if (typeof candidate !== "string") {
+      continue;
+    }
+    const trimmed = candidate.trim();
+    if (trimmed && isLikelyImageAvatar(trimmed)) {
+      return trimmed;
+    }
+  }
+  return null;
+}
+
 function agentBadgeText(agentId: string, defaultId: string | null) {
   return defaultId && agentId === defaultId ? "default" : null;
 }
@@ -577,6 +612,7 @@ export function renderAgents(props: AgentsProps) {
                   const badge = agentBadgeText(agent.id, defaultId);
                   const identity = props.agentIdentityById[agent.id] ?? null;
                   const emoji = resolveAgentEmoji(agent, identity);
+                  const avatarImage = resolveAgentAvatarImage(agent, identity);
                   const subtitle =
                     identity?.theme?.trim() || agent.identity?.theme?.trim() || "Ready for tasks";
                   return html`
@@ -591,7 +627,11 @@ export function renderAgents(props: AgentsProps) {
                       </div>
                       ${badge ? html`<span class="agent-pill">${badge}</span>` : nothing}
                       <div class="agent-avatar">
-                        ${emoji || normalizeAgentLabel(agent).slice(0, 1)}
+                        ${
+                          avatarImage
+                            ? html`<img src=${avatarImage} alt=${normalizeAgentLabel(agent)} />`
+                            : emoji || normalizeAgentLabel(agent).slice(0, 1)
+                        }
                       </div>
                       <div class="agent-info">
                         <div class="agent-title">${normalizeAgentLabel(agent)}</div>
@@ -766,11 +806,12 @@ function renderAgentHeader(
   const displayName = normalizeAgentLabel(agent);
   const subtitle = agent.identity?.theme?.trim() || "Agent workspace and routing.";
   const emoji = resolveAgentEmoji(agent, agentIdentity);
+  const avatarImage = resolveAgentAvatarImage(agent, agentIdentity);
   return html`
     <section class="card agent-header">
       <div class="agent-header-main">
         <div class="agent-avatar agent-avatar--lg">
-          ${emoji || displayName.slice(0, 1)}
+          ${avatarImage ? html`<img src=${avatarImage} alt=${displayName} />` : emoji || displayName.slice(0, 1)}
         </div>
         <div>
           <div class="card-title">${displayName}</div>

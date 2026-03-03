@@ -647,6 +647,10 @@ export function renderApp(state: AppViewState) {
                     ...(newAvatar !== "🤖" ? { avatar: newAvatar } : {}),
                   });
                   if (res.ok) {
+                    // Clear cached identity so Agents Manager reflects latest name/avatar.
+                    const nextIdentityById = { ...state.agentIdentityById };
+                    delete nextIdentityById[agentId];
+                    state.agentIdentityById = nextIdentityById;
                     // Reload agents to show updated data
                     void loadAgents(state);
                   } else {
@@ -693,6 +697,10 @@ export function renderApp(state: AppViewState) {
                         text: "Avatar updated successfully!",
                         tone: "success",
                       };
+                      // Clear cached identity so Agents Manager reflects latest name/avatar.
+                      const nextIdentityById = { ...state.agentIdentityById };
+                      delete nextIdentityById[agentId];
+                      state.agentIdentityById = nextIdentityById;
                       // Reload agents to show updated data
                       await loadAgents(state);
                     } else {
