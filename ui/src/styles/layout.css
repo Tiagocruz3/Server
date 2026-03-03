@@ -137,6 +137,15 @@
   background: transparent;
 }
 
+.topbar-app-logo {
+  width: 210px;
+  height: 42px;
+  object-fit: contain;
+  object-position: left center;
+  flex-shrink: 0;
+  display: block;
+}
+
 .topbar .nav-collapse-toggle {
   width: 36px;
   height: 36px;

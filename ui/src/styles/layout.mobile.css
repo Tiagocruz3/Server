@@ -66,6 +66,11 @@
     min-width: 0;
   }
 
+  .topbar-app-logo {
+    width: 150px;
+    height: 32px;
+  }
+
   .brand-title {
     font-size: 14px;
   }
