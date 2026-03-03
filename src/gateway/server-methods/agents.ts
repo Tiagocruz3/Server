@@ -296,6 +296,7 @@ export const agentsHandlers: GatewayRequestHandlers = {
         : {}),
       ...(workspaceDir ? { workspace: workspaceDir } : {}),
       ...(model ? { model } : {}),
+      ...(avatar ? { avatar } : {}),
     });
 
     await writeConfigFile(nextConfig);

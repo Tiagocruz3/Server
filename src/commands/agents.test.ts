@@ -62,7 +62,14 @@ describe("agents helpers", () => {
   it("applyAgentConfig merges updates", () => {
     const cfg: AgentMeConfig = {
       agents: {
-        list: [{ id: "work", workspace: "/old-ws", model: "anthropic/claude" }],
+        list: [
+          {
+            id: "work",
+            workspace: "/old-ws",
+            model: "anthropic/claude",
+            identity: { emoji: "🛠️" },
+          },
+        ],
       },
     };
 
@@ -71,6 +78,7 @@ describe("agents helpers", () => {
       name: "Work",
       workspace: "/new-ws",
       agentDir: "/state/work/agent",
+      avatar: "https://example.com/work.png",
     });
 
     const work = next.agents?.list?.find((agent) => agent.id === "work");
@@ -78,6 +86,8 @@ describe("agents helpers", () => {
     expect(work?.workspace).toBe("/new-ws");
     expect(work?.agentDir).toBe("/state/work/agent");
     expect(work?.model).toBe("anthropic/claude");
+    expect(work?.identity?.avatar).toBe("https://example.com/work.png");
+    expect(work?.identity?.emoji).toBe("🛠️");
   });
 
   it("applyAgentBindings skips duplicates and reports conflicts", () => {

@@ -194,14 +194,10 @@ function renderEditCard(app: AgentApp, accentColor: string, props: DashboardProp
         accept="image/*"
         hidden
         @change=${(e: Event) => {
-          console.log("[AgentMe] File input change event fired");
           const input = e.target as HTMLInputElement;
           const file = input.files?.[0];
-          console.log("[AgentMe] Selected file:", file?.name, file?.type, file?.size);
           if (file) {
             props.onSaveAgentWithImage(app.id, props.editingAgentName, file);
-          } else {
-            console.error("[AgentMe] No file selected");
           }
           input.value = "";
         }}
@@ -233,17 +229,13 @@ function renderEditCard(app: AgentApp, accentColor: string, props: DashboardProp
         
         <button 
           class="btn" 
+          type="button"
           style="width: 100%; margin-bottom: 12px;"
           @click=${(e: Event) => {
             e.stopPropagation();
-            console.log("[AgentMe] Upload button clicked, file input ID:", fileInputId);
-            const fileInput = document.getElementById(fileInputId);
-            console.log("[AgentMe] File input element:", fileInput);
-            if (fileInput) {
-              fileInput.click();
-            } else {
-              console.error("[AgentMe] File input not found!");
-            }
+            const root = (e.currentTarget as HTMLElement).closest(".agent-card");
+            const fileInput = root?.querySelector<HTMLInputElement>(`#${fileInputId}`);
+            fileInput?.click();
           }}
         >
           📷 Upload Profile Picture

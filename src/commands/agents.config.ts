@@ -137,6 +137,7 @@ export function applyAgentConfig(
     workspace?: string;
     agentDir?: string;
     model?: string;
+    avatar?: string;
   },
 ): AgentMeConfig {
   const agentId = normalizeAgentId(params.agentId);
@@ -144,12 +145,21 @@ export function applyAgentConfig(
   const list = listAgentEntries(cfg);
   const index = findAgentEntryIndex(list, agentId);
   const base = index >= 0 ? list[index] : { id: agentId };
+  const avatar = params.avatar?.trim();
+  const nextIdentity =
+    avatar && avatar.length > 0
+      ? {
+          ...base.identity,
+          avatar,
+        }
+      : base.identity;
   const nextEntry: AgentEntry = {
     ...base,
     ...(name ? { name } : {}),
     ...(params.workspace ? { workspace: params.workspace } : {}),
     ...(params.agentDir ? { agentDir: params.agentDir } : {}),
     ...(params.model ? { model: params.model } : {}),
+    ...(nextIdentity ? { identity: nextIdentity } : {}),
   };
   const nextList = [...list];
   if (index >= 0) {
