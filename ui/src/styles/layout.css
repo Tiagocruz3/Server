@@ -138,8 +138,8 @@
 }
 
 .topbar-app-logo {
-  width: 210px;
-  height: 42px;
+  width: 280px;
+  height: 54px;
   object-fit: contain;
   object-position: left center;
   flex-shrink: 0;
