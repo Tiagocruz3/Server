@@ -332,8 +332,8 @@ export function renderApp(state: AppViewState) {
           />
           <div class="brand">
             <div class="brand-text">
-              <div class="brand-title">Agent Me</div>
-              <div class="brand-sub">Agent OS</div>
+              <div class="brand-title">Control Centre</div>
+              <div class="brand-sub">Agent Me</div>
             </div>
           </div>
         </button>
