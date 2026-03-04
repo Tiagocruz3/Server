@@ -383,6 +383,189 @@ function truncateValue(value: unknown, maxLen = 40): string {
   return str.slice(0, maxLen - 3) + "...";
 }
 
+function getPathValue(root: unknown, path: Array<string | number>): unknown {
+  let current: unknown = root;
+  for (const key of path) {
+    if (!current || typeof current !== "object") {
+      return undefined;
+    }
+    current = (current as Record<string, unknown>)[String(key)];
+  }
+  return current;
+}
+
+function asString(value: unknown): string {
+  return typeof value === "string" ? value : "";
+}
+
+function asRecord(value: unknown): Record<string, unknown> {
+  return value && typeof value === "object" ? (value as Record<string, unknown>) : {};
+}
+
+function renderAiToolsQuickSetup(props: ConfigProps) {
+  const config = props.formValue ?? {};
+  const envVars = asRecord(getPathValue(config, ["env", "vars"]));
+
+  const openaiKey = asString(envVars.OPENAI_API_KEY);
+  const openrouterKey = asString(envVars.OPENROUTER_API_KEY);
+  const elevenLabsKey = asString(envVars.ELEVENLABS_API_KEY);
+
+  const imageModel = asString(
+    getPathValue(config, ["agents", "defaults", "imageModel", "primary"]),
+  );
+  const voiceProvider = asString(getPathValue(config, ["messages", "tts", "provider"]));
+
+  const audioModels = getPathValue(config, ["tools", "media", "audio", "models"]);
+  const firstAudioModel = Array.isArray(audioModels) ? audioModels[0] : null;
+  const audioProvider =
+    firstAudioModel && typeof firstAudioModel === "object"
+      ? asString((firstAudioModel as Record<string, unknown>).provider)
+      : "";
+  const audioModel =
+    firstAudioModel && typeof firstAudioModel === "object"
+      ? asString((firstAudioModel as Record<string, unknown>).model)
+      : "";
+
+  return html`
+    <section class="card" style="margin-bottom: 12px; padding: 14px; border: 1px solid rgba(52, 211, 153, 0.35);">
+      <div style="display: flex; justify-content: space-between; gap: 12px; align-items: flex-start;">
+        <div>
+          <div class="card-title" style="font-size: 14px;">AI Tools Quick Setup</div>
+          <div class="muted" style="font-size: 12px; margin-top: 4px;">
+            Save provider keys into <code>env.vars</code> and set defaults for image, voice, and transcription.
+          </div>
+        </div>
+      </div>
+
+      <div style="display: grid; gap: 10px; margin-top: 12px;">
+        <label class="field">
+          <span>OpenAI API Key</span>
+          <input
+            type="password"
+            placeholder="sk-..."
+            .value=${openaiKey}
+            @input=${(e: Event) =>
+              props.onFormPatch(
+                ["env", "vars", "OPENAI_API_KEY"],
+                (e.target as HTMLInputElement).value,
+              )}
+          />
+        </label>
+
+        <label class="field">
+          <span>OpenRouter API Key</span>
+          <input
+            type="password"
+            placeholder="sk-or-..."
+            .value=${openrouterKey}
+            @input=${(e: Event) =>
+              props.onFormPatch(
+                ["env", "vars", "OPENROUTER_API_KEY"],
+                (e.target as HTMLInputElement).value,
+              )}
+          />
+        </label>
+
+        <label class="field">
+          <span>ElevenLabs API Key</span>
+          <input
+            type="password"
+            placeholder="xi-..."
+            .value=${elevenLabsKey}
+            @input=${(e: Event) =>
+              props.onFormPatch(
+                ["env", "vars", "ELEVENLABS_API_KEY"],
+                (e.target as HTMLInputElement).value,
+              )}
+          />
+        </label>
+
+        <label class="field">
+          <span>Default image model (provider/model)</span>
+          <input
+            type="text"
+            placeholder="openai/gpt-4.1-mini"
+            .value=${imageModel}
+            @input=${(e: Event) =>
+              props.onFormPatch(
+                ["agents", "defaults", "imageModel", "primary"],
+                (e.target as HTMLInputElement).value,
+              )}
+          />
+        </label>
+
+        <label class="field">
+          <span>Voice provider</span>
+          <select
+            .value=${voiceProvider || "elevenlabs"}
+            @change=${(e: Event) =>
+              props.onFormPatch(
+                ["messages", "tts", "provider"],
+                (e.target as HTMLSelectElement).value,
+              )}
+          >
+            <option value="elevenlabs">elevenlabs</option>
+            <option value="openai">openai</option>
+            <option value="edge">edge</option>
+          </select>
+        </label>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+          <label class="field">
+            <span>Transcription provider</span>
+            <select
+              .value=${audioProvider || "openai"}
+              @change=${(e: Event) => {
+                const provider = (e.target as HTMLSelectElement).value;
+                const nextModel = provider === "openai" ? "whisper-1" : "";
+                props.onFormPatch(
+                  ["tools", "media", "audio", "models"],
+                  [
+                    {
+                      type: "provider",
+                      provider,
+                      model: nextModel,
+                      capabilities: ["audio"],
+                    },
+                  ],
+                );
+              }}
+            >
+              <option value="openai">openai (whisper)</option>
+              <option value="groq">groq</option>
+              <option value="deepgram">deepgram</option>
+              <option value="google">google</option>
+            </select>
+          </label>
+
+          <label class="field">
+            <span>Transcription model</span>
+            <input
+              type="text"
+              placeholder="whisper-1"
+              .value=${audioModel}
+              @input=${(e: Event) => {
+                const provider = audioProvider || "openai";
+                props.onFormPatch(
+                  ["tools", "media", "audio", "models"],
+                  [
+                    {
+                      type: "provider",
+                      provider,
+                      model: (e.target as HTMLInputElement).value,
+                      capabilities: ["audio"],
+                    },
+                  ],
+                );
+              }}
+            />
+          </label>
+        </div>
+      </div>
+    </section>
+  `;
+}
+
 export function renderConfig(props: ConfigProps) {
   const validity = props.valid == null ? "unknown" : props.valid ? "valid" : "invalid";
   const analysis = analyzeConfigSchema(props.schema);
@@ -680,6 +863,8 @@ export function renderConfig(props: ConfigProps) {
             `
             : nothing
         }
+
+        ${props.formMode === "form" ? renderAiToolsQuickSetup(props) : nothing}
 
         <!-- Form content -->
         <div class="config-content">
