@@ -60,10 +60,16 @@ ensure_brew() {
 }
 
 ensure_node_pnpm() {
-  if ! command -v node >/dev/null 2>&1; then
-    echo "[agentme-install] Installing Node via brew"
-    brew install node
+  local node_major="0"
+  if command -v node >/dev/null 2>&1; then
+    node_major="$(node -p 'process.versions.node.split(".")[0]')"
   fi
+
+  if [[ "$node_major" -lt 22 ]]; then
+    echo "[agentme-install] Installing/upgrading Node via brew"
+    brew install node || brew upgrade node
+  fi
+
   if ! command -v pnpm >/dev/null 2>&1; then
     echo "[agentme-install] Installing pnpm@10"
     npm install -g pnpm@10
@@ -111,9 +117,9 @@ build_app() {
 
 ensure_wrapper() {
   mkdir -p "$HOME/.local/bin"
-  cat > "$HOME/.local/bin/agentme" <<'EOF'
+  cat > "$HOME/.local/bin/agentme" <<EOF
 #!/usr/bin/env bash
-node "$HOME/agent-me-server/agentme.mjs" "$@"
+node "$REPO_DIR/agentme.mjs" "\$@"
 EOF
   chmod +x "$HOME/.local/bin/agentme"
 
@@ -138,7 +144,9 @@ write_config() {
   "gateway": {
     "mode": "local",
     "port": $PORT,
-    "auth": { "token": "$token" },
+    "bind": "loopback",
+    "auth": { "mode": "token", "token": "$token" },
+    "remote": { "token": "$token" },
     "trustedProxies": ["127.0.0.1", "::1", "localhost"],
     "controlUi": { "root": "$REPO_DIR/dist/control-ui" }
   }

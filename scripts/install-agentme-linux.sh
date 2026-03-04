@@ -120,9 +120,9 @@ build_app() {
 
 ensure_wrapper() {
   mkdir -p "$HOME/.local/bin"
-  cat > "$HOME/.local/bin/agentme" <<'EOF'
+  cat > "$HOME/.local/bin/agentme" <<EOF
 #!/usr/bin/env bash
-node "$HOME/agent-me-server/agentme.mjs" "$@"
+node "$REPO_DIR/agentme.mjs" "\$@"
 EOF
   chmod +x "$HOME/.local/bin/agentme"
 
@@ -152,6 +152,7 @@ write_config() {
     "port": $PORT,
     "bind": "loopback",
     "auth": { "mode": "token", "token": "$token" },
+    "remote": { "token": "$token" },
     "trustedProxies": ["127.0.0.1", "::1", "localhost"],
     "controlUi": { "root": "$REPO_DIR/dist/control-ui" }
   }

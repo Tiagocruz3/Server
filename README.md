@@ -40,15 +40,21 @@ If you want a personal, single-user assistant that feels local, fast, and always
 - **Node.js** ≥ 22
 - **npm**, **pnpm**, or **bun**
 
-### Quick Install
+### Quick Install (recommended)
+
+macOS / Linux:
 
 ```bash
-npm install -g agentme@latest
-
-agentme onboard --install-daemon
+curl -fsSL https://raw.githubusercontent.com/Agentme-AI/Server/main/scripts/install-agentme.sh | bash
 ```
 
-The wizard installs the Gateway daemon (launchd/systemd user service) so it stays running.
+Windows (PowerShell):
+
+```powershell
+iwr -useb https://raw.githubusercontent.com/Agentme-AI/Server/main/scripts/install-agentme.ps1 | iex
+```
+
+These installers clone/update the repo, install dependencies, build, generate a secure local token, write config, install the daemon, and verify gateway reachability.
 
 ### From Source
 
