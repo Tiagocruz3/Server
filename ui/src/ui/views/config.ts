@@ -415,6 +415,10 @@ function renderAiToolsQuickSetup(props: ConfigProps) {
   );
   const voiceProvider = asString(getPathValue(config, ["messages", "tts", "provider"]));
 
+  const openaiReady = openaiKey.trim().length > 0;
+  const openrouterReady = openrouterKey.trim().length > 0;
+  const elevenlabsReady = elevenLabsKey.trim().length > 0;
+
   const audioModels = getPathValue(config, ["tools", "media", "audio", "models"]);
   const firstAudioModel = Array.isArray(audioModels) ? audioModels[0] : null;
   const audioProvider =
@@ -435,6 +439,23 @@ function renderAiToolsQuickSetup(props: ConfigProps) {
             Save provider keys into <code>env.vars</code> and set defaults for image, voice, and transcription.
           </div>
         </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-top: 12px;">
+        ${[
+          { label: "OpenAI", ok: openaiReady },
+          { label: "OpenRouter", ok: openrouterReady },
+          { label: "ElevenLabs", ok: elevenlabsReady },
+        ].map(
+          (item) => html`
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; border:1px solid var(--border); border-radius:10px; padding:8px 10px; background: var(--bg-elevated);">
+              <span style="font-size:12px;">${item.label}</span>
+              <span style="font-size:11px; font-weight:600; color:${item.ok ? "#10b981" : "#f59e0b"};">
+                ${item.ok ? "● Connected" : "● Missing key"}
+              </span>
+            </div>
+          `,
+        )}
       </div>
 
       <div style="display: grid; gap: 10px; margin-top: 12px;">
